@@ -1,0 +1,28 @@
+{
+    "name": "limonlabs/bigcommerce",
+    "type": "package",
+    "description": "Bigcommerce package for Laravel",
+    "version": "0.0.1",
+    "autoload": {
+        "psr-4": {
+            "Limonlabs\\Bigcommerce\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "LimonLabs",
+            "email": "dev@limonlabs.dev"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "laravel/cashier": "^15.6"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Limonlabs\\Bigcommerce\\Providers\\LimonlabsBigcommerceProvider"
+            ]
+        }
+    }
+}

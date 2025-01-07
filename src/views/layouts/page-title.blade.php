@@ -1,0 +1,1 @@
+<h1 class="mt-8 text-3xl">{{ $title }}</h1>
