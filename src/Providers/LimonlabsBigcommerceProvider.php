@@ -25,6 +25,8 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/bigcommerce.php' => config_path('bigcommerce.php'),
         ], 'limonlabs-bigcommerce-config');
+        $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
+        $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
 
         Cashier::useCustomerModel(\Limonlabs\Bigcommerce\Models\StoreInfo::class);
     }
