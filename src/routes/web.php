@@ -24,4 +24,6 @@ Route::any('/bc-api/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\Bigcommerce
 
 Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
+
+    Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
 });
