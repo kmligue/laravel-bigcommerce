@@ -21,7 +21,13 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'limonlabs-bigcommerce-migrations');
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+
+        // Views
         $this->loadViewsFrom(__DIR__.'/../views', 'limonlabs/bigcommerce');
+        $this->publishes([
+            __DIR__.'/../views' => resource_path('views/vendor/limonlabs/bigcommerce'),
+        ], 'limonlabs-bigcommerce-views');
+        
         $this->publishes([
             __DIR__.'/../config/bigcommerce.php' => config_path('bigcommerce.php'),
         ], 'limonlabs-bigcommerce-config');
