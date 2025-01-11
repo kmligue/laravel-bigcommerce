@@ -1,8 +1,6 @@
 @extends('limonlabs/bigcommerce::layouts.app')
 
 @section('content')
-    @include('limonlabs/bigcommerce::layouts.tabs')
-
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Help'])
 
     <div class="bg-white shadow-md p-5 mt-8">

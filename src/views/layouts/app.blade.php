@@ -18,6 +18,12 @@
 </head>
 <body class="bg-[#f6f7f9]">
     <div class="p-10 mx-auto" style="max-width: 1300px;">
+        @if (View::exists('layouts/tabs'))
+            @include('layouts.tabs')
+        @else
+            @include('limonlabs/bigcommerce::layouts.tabs')
+        @endif
+
         @yield('content')
     </div>
 

@@ -1,7 +1,6 @@
 @extends('limonlabs/bigcommerce::layouts.app')
 
 @section('content')
-    @include('limonlabs/bigcommerce::layouts.tabs')
     @include('limonlabs/bigcommerce::billing.partials.tabs')
 
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Billing History'])

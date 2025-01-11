@@ -14,7 +14,6 @@
 @endsection
 
 @section('content')
-    @include('limonlabs/bigcommerce::layouts.tabs')
     @include('limonlabs/bigcommerce::billing.partials.tabs')
 
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Pricing Plans'])

@@ -292,13 +292,9 @@ class BigcommerceController
     }
 
     protected function installScripts($data) {
-        $scripts = [
-            
-        ];
+        $scripts = config('scripts.scripts');
 
-        $styles = [
-            
-        ];
+        $styles = config('scripts.scripts');
 
         $client = new Client();
 

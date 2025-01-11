@@ -27,8 +27,6 @@
 @endsection
 
 @section('content')
-    @include('limonlabs/bigcommerce::layouts.tabs')
-
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Billing History'])
 
     <div class="bg-white shadow-md p-5 mt-8 w-1/2 mx-auto">
