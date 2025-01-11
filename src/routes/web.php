@@ -26,4 +26,8 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
 
     Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
+
+    Route::get('stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'index'])->name('billing');
+    Route::get('stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'history']);
+    Route::get('stores/{storeHash}/billing/{plan}', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'show']);
 });
