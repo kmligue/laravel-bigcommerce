@@ -19,4 +19,8 @@ class StoreInfo extends Authenticatable
         'user_email',
         'timezone'
     ];
+
+    public function webhooks() {
+        return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
+    }
 }

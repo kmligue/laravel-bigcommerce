@@ -5,7 +5,9 @@ namespace Limonlabs\Bigcommerce\Controllers;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
+use Limonlabs\Bigcommerce\Models\Webhook;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class BigcommerceController
 {
@@ -117,6 +119,7 @@ class BigcommerceController
             $storeHash = $data['context'];
 
             $this->installScripts($data);
+            $this->installWebhooks($store_info);
 
             if (auth()->check()) {
                 Auth::logout();
@@ -288,6 +291,37 @@ class BigcommerceController
             }
         } else {
             return redirect('error')->with('error', 'The signed request from BigCommerce was empty.');
+        }
+    }
+
+    protected function installWebhooks($store) {
+        if ($store->webhooks->count() == 0) {
+            $hooks = config('webhooks');
+
+            foreach ($hooks as $hook) {
+                $response = Http::withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'X-Auth-Token' => $store->access_token
+                ])->post('https://api.bigcommerce.com/'. $store->store_hash .'/v3/hooks', $hook);
+    
+                if ($response->successful()) {
+                    $json = $response->json();
+    
+                    Webhook::create([
+                        'store_id' => $store->id,
+                        'webhook_id' => $json['data']['id'],
+                        'client_id' => $json['data']['client_id'],
+                        'store_hash' => $json['data']['store_hash'],
+                        'webhook_created_at' => $json['data']['created_at'],
+                        'webhook_updated_at' => $json['data']['updated_at'],
+                        'scope' => $json['data']['scope'],
+                        'destination' => $json['data']['destination'],
+                        'is_active' => $json['data']['is_active'],
+                        'headers' => $json['data']['headers']
+                    ]);
+                }
+            }
         }
     }
 
