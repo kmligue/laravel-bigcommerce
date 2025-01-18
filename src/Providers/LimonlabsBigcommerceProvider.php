@@ -14,6 +14,10 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->commands([
+            \Limonlabs\Bigcommerce\Commands\Install::class
+        ]);
+
         // register middleware
         $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
 
@@ -35,8 +39,10 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             __DIR__.'/../config/bigcommerce.php' => config_path('bigcommerce.php'),
             __DIR__.'/../config/plans.php' => config_path('plans.php'),
             __DIR__.'/../config/scripts.php' => config_path('scripts.php'),
+            __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
             ],
         'limonlabs-bigcommerce-config');
+        
         $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
 

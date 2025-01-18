@@ -16,12 +16,14 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "laravel/cashier": "^15.6"
+        "laravel/cashier": "^15.6",
+        "stancl/tenancy": "3.8.5"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Limonlabs\\Bigcommerce\\Providers\\LimonlabsBigcommerceProvider"
+                "Limonlabs\\Bigcommerce\\Providers\\LimonlabsBigcommerceProvider",
+                "Stancl\\Tenancy\\TenancyServiceProvider"
             ]
         }
     }
