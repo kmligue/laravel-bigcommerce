@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'store_info' => [
+    'tenant' => [
         'driver' => 'session',
-        'provider' => 'store_info',
+        'provider' => 'tenant',
     ]
 ];

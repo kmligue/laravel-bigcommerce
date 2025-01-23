@@ -7,39 +7,19 @@ use Limonlabs\Bigcommerce\Models\StoreInfo;
 
 class BillingController
 {
-    public function index(Request $request, $storeHash) {
-        $store = StoreInfo::where('store_hash', 'stores/' . $storeHash)->first();
+    public function index(Request $request) {
+        $subscription = tenant()->subscription('default');
 
-        if (!$store) {
-            abort(404);
-        }
-
-        $storeHash = 'stores/' . $storeHash;
-        $subscription = $store->subscription('default');
-
-        return view('limonlabs/bigcommerce::billing.index', compact('store', 'storeHash', 'subscription'));
+        return view('limonlabs/bigcommerce::billing.index', compact('subscription'));
     }
 
-    public function show(Request $request, $storeHash, $plan) {
-        $store = StoreInfo::where('store_hash', 'stores/' . $storeHash)->first();
+    public function show(Request $request, $plan) {
+        $intent = tenant()->createSetupIntent();
 
-        if (!$store) {
-            abort(404);
-        }
-
-        $storeHash = 'stores/' . $storeHash;
-        $intent = $store->createSetupIntent();
-
-        return view('limonlabs/bigcommerce::billing.show', compact('store', 'storeHash', 'plan', 'intent'));
+        return view('limonlabs/bigcommerce::billing.show', compact('plan', 'intent'));
     }
 
     public function store(Request $request, $storeHash, $plan) {
-        $store = StoreInfo::where('store_hash', 'stores/' . $storeHash)->first();
-
-        if (!$store) {
-            abort(404);
-        }
-
         try {
             $plans = config('plans');
             $priceId = '';
@@ -47,12 +27,12 @@ class BillingController
             if (isset($plans[$plan]) && !empty($plans[$plan])) {
                 $priceId = $plans[$plan]['plan_id'];
 
-                $response = $store->newSubscription('default', $priceId)->create($request->paymentMethod, [
-                    'email' => $store->user_email
+                $response = tenant()->newSubscription('default', $priceId)->create($request->paymentMethod, [
+                    'email' => tenant()->user_email
                 ]);
 
                 if ($response) {
-                    $store->update([
+                    tenant()->update([
                         'plan' => $plan
                     ]);
                 }
@@ -61,20 +41,12 @@ class BillingController
 
         }
 
-        $storeHash = 'stores/' . $storeHash;
-
-        return redirect('/' . $storeHash . '/billing');
+        return redirect('/billing');
     }
 
-    public function select(Request $request, $storeHash, $plan) {
-        $store = StoreInfo::where('store_hash', 'stores/' . $storeHash)->first();
-
-        if (!$store) {
-            abort(404);
-        }
-
-        if ($store->subscription() && $store->subscription()->stripe_status == 'active') {
-            $store->subscription('default')->cancelNow();
+    public function select(Request $request, $plan) {
+        if (tenant()->subscription() && tenant()->subscription()->stripe_status == 'active') {
+            tenant()->subscription('default')->cancelNow();
         }
 
         $plans = config('plans');
@@ -83,23 +55,23 @@ class BillingController
         if (isset($plans[$plan]) && !empty($plans[$plan])) {
             $priceId = $plans[$plan]['plan_id'];
 
-            if ($store->subscription() && $store->hasPaymentMethod()) {
-                $paymentMethod = $store->defaultPaymentMethod();
+            if (tenant()->subscription() && tenant()->hasPaymentMethod()) {
+                $paymentMethod = tenant()->defaultPaymentMethod();
 
                 if (!$paymentMethod) {
-                    $paymentMethod = $store->paymentMethods()->first();
+                    $paymentMethod = tenant()->paymentMethods()->first();
                 }
 
-                $store->newSubscription('default', $priceId)->create($paymentMethod->id);
+                tenant()->newSubscription('default', $priceId)->create($paymentMethod->id);
 
                 return response()->json([
                     'success' => true
                 ]);
             }
 
-            $checkout = $store->newSubscription('default', $priceId)->checkout([
-                'cancel_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=false',
-                'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=true'
+            $checkout = tenant()->newSubscription('default', $priceId)->checkout([
+                'cancel_url' => 'https://store-'. str_replace('stores/', '', tenant('store_hash')) .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=false',
+                'success_url' => 'https://store-'. str_replace('stores/', '', tenant('store_hash')) .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=true'
             ]);
 
             return response()->json([
@@ -109,16 +81,9 @@ class BillingController
         }
     }
 
-    public function history(Request $request, $storeHash) {
-        $store = StoreInfo::where('store_hash', 'stores/' . $storeHash)->first();
+    public function history(Request $request) {
+        $invoices = tenant()->invoices();
 
-        if (!$store) {
-            abort(404);
-        }
-
-        $invoices = $store->invoices();
-        $storeHash = 'stores/' . $storeHash;
-
-        return view('limonlabs/bigcommerce::billing.history', compact('store', 'storeHash', 'invoices'));
+        return view('limonlabs/bigcommerce::billing.history', compact('invoices'));
     }
 }

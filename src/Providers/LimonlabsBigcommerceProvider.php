@@ -8,6 +8,17 @@ use Laravel\Cashier\Cashier;
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
     /**
+     * Register services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
+        $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
+    }
+
+    /**
      * Bootstrap services.
      *
      * @return void
@@ -17,9 +28,6 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->commands([
             \Limonlabs\Bigcommerce\Commands\Install::class
         ]);
-
-        // register middleware
-        $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
 
         $this->publishesMigrations([
             __DIR__.'/../database/migrations' => database_path('migrations'),
@@ -42,10 +50,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
             ],
         'limonlabs-bigcommerce-config');
-        
-        $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
-        $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
 
-        Cashier::useCustomerModel(\Limonlabs\Bigcommerce\Models\StoreInfo::class);
+        Cashier::useCustomerModel(\Limonlabs\Bigcommerce\Models\Tenant::class);
     }
 }

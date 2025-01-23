@@ -85,26 +85,26 @@ class BigcommerceController
                 $request->session()->put('user_id', $data['user']['id']);
                 $request->session()->put('user_email', $data['user']['email']);
 
-                $store_info = StoreInfo::where('store_hash', $data['context'])->first();
+                $id = str_replace('stores/', '', $data['context']);
 
-                if ($store_info) {
-                    $store_info->update([
+                $tenant = \Limonlabs\Bigcommerce\Models\Tenant::where('id', $id)->first();
+                $domain = null;
+
+                if ($tenant) {
+                    $tenant->update([
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_email' => $data['user']['email'],
                         'timezone' => $this->getStoreTimezone($data['context'], $data['access_token'])
                     ]);
                 } else {
-                    $store_info = StoreInfo::create([
+                    $tenant = \Limonlabs\Bigcommerce\Models\Tenant::create([
+                        'id' => $id,
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
                         'user_email' => $data['user']['email'],
                         'timezone' => $this->getStoreTimezone($data['context'], $data['access_token']),
-                        'settings' => json_encode([
-                            'active' => 1
-                        ]),
-                        'pro' => 'free'
                     ]);
                 }
 
@@ -119,19 +119,20 @@ class BigcommerceController
             $storeHash = $data['context'];
 
             $this->installScripts($data);
-            $this->installWebhooks($store_info);
+            $this->installWebhooks($tenant);
 
             if (auth()->check()) {
                 Auth::logout();
             }
 
-            $loggedInUser = Auth::guard('store_info')->loginUsingId($store_info->id);
+            $loggedInUser = Auth::guard('tenant')->loginUsingId($tenant->id);
 
             if (!$loggedInUser) {
                 abort(404);
             }
 
-            return view('limonlabs/bigcommerce::overview.index', compact('storeHash'));
+            // return view('limonlabs/bigcommerce::overview.index', compact('storeHash'));
+            return redirect('/'. $id .'/overview')->tenant($domain);
         } catch (\RequestException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorMessage = "An error occurred.";
@@ -172,9 +173,10 @@ class BigcommerceController
             return redirect('error')->with('error', 'The signed request from BigCommerce was empty.');
         }
 
-        $store_info = StoreInfo::where('store_hash', $verifiedSignedRequestData['context'])->first();
+        $id = str_replace('stores/', '', $verifiedSignedRequestData['context']);
+        $tenant = \Limonlabs\Bigcommerce\Models\Tenant::where('id', $id)->first();
 
-        if ($store_info) {
+        if ($tenant) {
             $user_id = $verifiedSignedRequestData['user']['id'];
             $storeHash = $verifiedSignedRequestData['context'];
 
@@ -182,7 +184,7 @@ class BigcommerceController
                 Auth::logout();
             }
 
-            $loggedInUser = Auth::guard('store_info')->loginUsingId($store_info->id);
+            $loggedInUser = Auth::guard('tenant')->loginUsingId($tenant->id);
 
             if (!$loggedInUser) {
                 abort(404);
@@ -198,7 +200,7 @@ class BigcommerceController
                 $params['success'] = $request->get('success');
             }
 
-            return redirect('/' . $storeHash . '/overview?' . http_build_query($params));
+            return redirect('/'. $id .'/overview?' . http_build_query($params));
         } else {
             return redirect('error')->with('error', 'Store not found.');
         }
@@ -294,35 +296,38 @@ class BigcommerceController
         }
     }
 
-    protected function installWebhooks($store) {
-        if ($store->webhooks->count() == 0) {
-            $hooks = config('webhooks');
+    protected function installWebhooks($tenant) {
+        $tenant->run(function() use ($tenant) {
+            $webhook = Webhook::get();
 
-            foreach ($hooks as $hook) {
-                $response = Http::withHeaders([
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'X-Auth-Token' => $store->access_token
-                ])->post('https://api.bigcommerce.com/'. $store->store_hash .'/v3/hooks', $hook);
-    
-                if ($response->successful()) {
-                    $json = $response->json();
-    
-                    Webhook::create([
-                        'store_id' => $store->id,
-                        'webhook_id' => $json['data']['id'],
-                        'client_id' => $json['data']['client_id'],
-                        'store_hash' => $json['data']['store_hash'],
-                        'webhook_created_at' => $json['data']['created_at'],
-                        'webhook_updated_at' => $json['data']['updated_at'],
-                        'scope' => $json['data']['scope'],
-                        'destination' => $json['data']['destination'],
-                        'is_active' => $json['data']['is_active'],
-                        'headers' => $json['data']['headers']
-                    ]);
+            if ($webhook->count() == 0) {
+                $hooks = config('webhooks');
+
+                foreach ($hooks as $hook) {
+                    $response = Http::withHeaders([
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $tenant->access_token
+                    ])->post('https://api.bigcommerce.com/'. $tenant->store_hash .'/v3/hooks', $hook);
+
+                    if ($response->successful()) {
+                        $json = $response->json();
+
+                        Webhook::create([
+                            'webhook_id' => $json['data']['id'],
+                            'client_id' => $json['data']['client_id'],
+                            'store_hash' => $json['data']['store_hash'],
+                            'webhook_created_at' => $json['data']['created_at'],
+                            'webhook_updated_at' => $json['data']['updated_at'],
+                            'scope' => $json['data']['scope'],
+                            'destination' => $json['data']['destination'],
+                            'is_active' => $json['data']['is_active'],
+                            'headers' => $json['data']['headers']
+                        ]);
+                    }
                 }
             }
-        }
+        });
     }
 
     protected function installScripts($data) {

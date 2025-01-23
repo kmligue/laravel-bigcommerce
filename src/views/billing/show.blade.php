@@ -30,7 +30,7 @@
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Billing History'])
 
     <div class="bg-white shadow-md p-5 mt-8 w-1/2 mx-auto">
-        <form method="post" action="{{ url('api/'. $storeHash .'/billing/' . $plan) }}" id="payment-form">
+        <form method="post" action="{{ url('api/billing/' . $plan) }}" id="payment-form">
             @csrf
 
             <input type="hidden" name="plan" value="{{ $plan }}">

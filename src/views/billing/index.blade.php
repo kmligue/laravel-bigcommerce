@@ -64,7 +64,7 @@
                                                     @if ($subscription->stripe_price == $plan['plan_id'])
                                                         <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                                     @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
+                                                        <form method="post" action="{{ url('api/billing/'. $key .'/select') }}" class="cancel-form">
                                                             <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">Downgrade</button>
                                                         </form>
                                                     @endif
@@ -78,7 +78,7 @@
                                                     @if ($subscription->stripe_price == $plan['plan_id'])
                                                         <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                                     @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
+                                                        <form method="post" action="{{ url('api/billing/'. $key .'/select') }}" class="cancel-form">
                                                             <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
                                                         </form>
                                                     @endif
@@ -86,7 +86,7 @@
                                                     @if ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])
                                                         <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                                     @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
+                                                        <form method="post" action="{{ url('api/billing/'. $key .'/select') }}" class="cancel-form">
                                                             <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan && $currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
                                                         </form>
                                                     @endif

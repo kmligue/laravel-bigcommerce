@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'store_info' => [
+    'tenant' => [
         'driver' => 'eloquent',
-        'model' => Limonlabs\Bigcommerce\Models\StoreInfo::class,
+        'model' => Limonlabs\Bigcommerce\Models\Tenant::class,
     ]
 ];

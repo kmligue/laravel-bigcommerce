@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('webhooks', function (Blueprint $table) {
             $table->id();
-            $table->integer('store_id');
             $table->integer('webhook_id');
             $table->string('client_id');
             $table->string('store_hash');
