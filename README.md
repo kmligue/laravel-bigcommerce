@@ -29,3 +29,21 @@ use Illuminate\Session\Middleware\StartSession;
 })
 ...
 ```
+&bullet; Set tenant_model in config/tenancy.php
+```
+'tenant_model' => Limonlabs\Bigcommerce\Models\Tenant::class,
+```
+&bullet; Add your app url to central_domains in config/tenancy.php
+```
+'central_domains' => [
+    '127.0.0.1',
+    'localhost',
+    'laravel-package.test', // Example
+],
+```
+&bullet; Add the TenancyServiceProvider class in app/bootstrap/providers.php
+```
+...
+App\Providers\TenancyServiceProvider::class,
+...
+```
