@@ -46,3 +46,15 @@ use Illuminate\Session\Middleware\StartSession;
 App\Providers\TenancyServiceProvider::class,
 ...
 ```
+&bullet; Register tenant routes this way
+```
+Route::group([
+'prefix' => '/{tenant}',
+'middleware' => [
+    'web',
+    InitializeTenancyByPath::class,
+]
+], function() {
+    // Routes here
+});
+```
