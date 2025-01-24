@@ -44,10 +44,11 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         
         $this->publishes(
             [
-            __DIR__.'/../config/bigcommerce.php' => config_path('bigcommerce.php'),
-            __DIR__.'/../config/plans.php' => config_path('plans.php'),
-            __DIR__.'/../config/scripts.php' => config_path('scripts.php'),
-            __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
+                __DIR__.'/../config/bigcommerce.php' => config_path('bigcommerce.php'),
+                __DIR__.'/../config/plans.php' => config_path('plans.php'),
+                __DIR__.'/../config/scripts.php' => config_path('scripts.php'),
+                __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
+                __DIR__.'/../config/app-extensions.php' => config_path('app-extensions.php'),
             ],
         'limonlabs-bigcommerce-config');
 

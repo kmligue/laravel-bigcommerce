@@ -27,8 +27,4 @@ class Webhook extends Model
     protected $casts = [
         'headers' => 'array'
     ];
-
-    public function store() {
-        return $this->belongsTo(\Limonlabs\Bigcommerce\Models\StoreInfo::class);
-    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
 use Limonlabs\Bigcommerce\Models\Webhook;
+use Limonlabs\Bigcommerce\Models\AppExtension;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
@@ -288,12 +289,93 @@ class BigcommerceController
                 $request->session()->put('owner_id', $verifiedSignedRequestData['owner']['id']);
                 $request->session()->put('owner_email', $verifiedSignedRequestData['owner']['email']);
                 $request->session()->put('store_hash', $verifiedSignedRequestData['context']);
+
+                $id = str_replace('stores/', '', $verifiedSignedRequestData['context']);
+                $tenant = \Limonlabs\Bigcommerce\Models\Tenant::where('id', $id)->first();
+
+                if ($tenant) {
+                    $this->uninstallAppExtension($tenant);
+                    $this->uninstallWebhooks($tenant);
+                }
             } else {
                 return redirect('error')->with('error', 'The signed request from BigCommerce could not be validated.');
             }
         } else {
             return redirect('error')->with('error', 'The signed request from BigCommerce was empty.');
         }
+    }
+
+    protected function uninstallAppExtension($tenant) {
+        $tenant->run(function() use ($tenant) {
+            $extensions = AppExtension::get();
+
+            if ($extensions->count() > 0) {
+                foreach ($extensions as $extension) {
+                    $response = Http::withHeaders([
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $tenant->access_token
+                    ])->post('https://api.bigcommerce.com/'. $tenant->store_hash .'/graphql', [
+                        'query' => 'mutation AppExtension($input: DeleteAppExtensionInput!) {  appExtension {    deleteAppExtension(input: $input) {      deletedAppExtensionId    }  }}',
+                        'variables' => [
+                            'input' => [
+                                'id' => $extension->app_extension_id
+                            ]
+                        ]
+                    ]);
+
+                    if ($response->successful()) {
+                        $extension->delete();
+                    }
+                }
+            }
+        });
+    }
+
+    protected function installAppExtension($tenant) {
+        $tenant->run(function() use ($tenant) {
+            $extension = AppExtension::get();
+
+            if ($extension->count() == 0) {
+                $appExtensions = config('app-extensions');
+
+                foreach ($appExtensions as $appExtension) {
+                    $response = Http::withHeaders([
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $tenant->access_token
+                    ])->post('https://api.bigcommerce.com/'. $tenant->store_hash .'/graphql', $appExtension);
+
+                    if ($response->successful()) {
+                        $json = $response->json();
+
+                        AppExtension::create([
+                            'app_extension_id' => $json['data']['appExtension']['createAppExtension']['appExtension']['id']
+                        ]);
+                    }
+                }
+            }
+        });
+    }
+
+    protected function uninstallWebhooks($tenant) {
+        $tenant->run(function() use ($tenant) {
+            $webhooks = Webhook::get();
+
+            if ($webhooks->count() > 0) {
+                foreach ($webhooks as $webhook) {
+                    $response = Http::withHeaders([
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $tenant->access_token
+                    ])->delete('https://api.bigcommerce.com/'. $tenant->store_hash .'/v3/hooks/'. $webhook->webhook_id);
+
+                    if ($response->successful()) {
+                        $webhook->delete();
+                    }
+                }
+            }
+        });
     }
 
     protected function installWebhooks($tenant) {
