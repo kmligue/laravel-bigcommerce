@@ -18,7 +18,7 @@ composer require limonlabs/bigcommerce:@dev
 ```
 php artisan bigcommerce:install
 ```
-&bullet; Register **StartSession** middleware. (https://dev.to/abdulwahidkahar/how-to-fix-session-store-not-set-on-request-laravel-11-2d4p)
+&bullet; Register **StartSession** middleware in bootstrap/app.php. (https://dev.to/abdulwahidkahar/how-to-fix-session-store-not-set-on-request-laravel-11-2d4p)
 ```
 use Illuminate\Session\Middleware\StartSession;
 
