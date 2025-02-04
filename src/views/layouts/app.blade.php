@@ -14,6 +14,12 @@
 
     <script src="https://kit.fontawesome.com/db85af4214.js" crossorigin="anonymous"></script>
 
+    <style>
+        body {
+            font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+
     @yield('head')
 </head>
 <body class="bg-[#f6f7f9]">
