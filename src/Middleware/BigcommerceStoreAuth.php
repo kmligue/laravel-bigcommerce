@@ -23,6 +23,8 @@ class BigcommerceStoreAuth
         if (!$store) {
             abort(404);
         }
+        
+        \Illuminate\Support\Facades\DB::setTablePrefix(str_replace('stores/', '', $storeHash) . '_');
 
         return $next($request);
     }
