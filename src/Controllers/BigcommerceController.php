@@ -100,11 +100,7 @@ class BigcommerceController
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
                         'user_email' => $data['user']['email'],
-                        'timezone' => $this->getStoreTimezone($data['context'], $data['access_token']),
-                        'settings' => json_encode([
-                            'active' => 1
-                        ]),
-                        'pro' => 'free'
+                        'timezone' => $this->getStoreTimezone($data['context'], $data['access_token'])
                     ]);
                 }
 

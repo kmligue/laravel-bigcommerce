@@ -17,6 +17,13 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         // register middleware
         $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
 
+        // register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Limonlabs\Bigcommerce\Commands\TenantMigration::class,
+            ]);
+        }
+
         $this->publishesMigrations([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'limonlabs-bigcommerce-migrations');
