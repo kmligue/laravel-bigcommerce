@@ -41,6 +41,8 @@ class StoreInfo extends Authenticatable
             DB::setTablePrefix($prefix);
 
             Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
+
+            DB::setTablePrefix('');
         });
     }
 }
