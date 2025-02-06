@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('user_id');
             $table->string('user_email');
             $table->string('timezone');
+            $table->json('settings')->nullable();
             $table->string('stripe_id')->nullable()->index();
             $table->string('pm_type')->nullable();
             $table->string('pm_last_four', 4)->nullable();

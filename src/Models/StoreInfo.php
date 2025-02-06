@@ -20,7 +20,8 @@ class StoreInfo extends Authenticatable
         'access_token',
         'user_id',
         'user_email',
-        'timezone'
+        'timezone',
+        'settings'
     ];
 
     public function webhooks() {
