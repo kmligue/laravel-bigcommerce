@@ -7,3 +7,10 @@ if (!function_exists('tenant')) {
         return request()->tenant;
     }
 }
+
+if (!function_exists('tenant_class')) {
+    function tenant_class()
+    {
+        return config('tenant.tenant');
+    }
+}

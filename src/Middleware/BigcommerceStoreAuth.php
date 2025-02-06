@@ -19,7 +19,8 @@ class BigcommerceStoreAuth
     public function handle(Request $request, Closure $next)
     {
         $storeHash = 'stores/' . $request->route()->parameter('storeHash');
-        $store = StoreInfo::where('store_hash', $storeHash)->first();
+        
+        $store = tenant_class()::where('store_hash', $storeHash)->first();
 
         if (!$store) {
             abort(404);
