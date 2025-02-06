@@ -328,7 +328,7 @@ class BigcommerceController
 
     protected function installScripts($data) {
         $scripts = config('scripts.scripts');
-        $styles = config('scripts.scripts');
+        $styles = config('scripts.styles');
         $storeHash = str_replace('stores/', '', $data['context']);
 
         $client = new Client();
