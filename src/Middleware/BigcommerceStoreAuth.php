@@ -5,6 +5,7 @@ namespace Limonlabs\Bigcommerce\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
+use Illuminate\Support\Facades\Config;
 
 class BigcommerceStoreAuth
 {
@@ -23,8 +24,19 @@ class BigcommerceStoreAuth
         if (!$store) {
             abort(404);
         }
+
+        // set the store in the request
+        $request->merge(['tenant' => $store]);
         
-        \Illuminate\Support\Facades\DB::setTablePrefix(str_replace('stores/', '', $storeHash) . '_');
+        $prefix = Config::get('database.connections.tenant.prefix');
+
+        if (!empty($prefix)) {
+            $prefix = $prefix . '_' . str_replace('stores/', '', $storeHash) . '_';
+        } else {
+            $prefix = str_replace('stores/', '', $storeHash) . '_';
+        }
+
+        \Illuminate\Support\Facades\Config::set('database.connections.tenant.prefix', $prefix);
 
         return $next($request);
     }

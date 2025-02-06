@@ -4,6 +4,7 @@ namespace Limonlabs\Bigcommerce\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
+use Illuminate\Support\Facades\Config;
 
 class TenantMigration extends Command
 {
@@ -41,7 +42,15 @@ class TenantMigration extends Command
         if ($storeInfo) {
             $this->info('Migrating tenant: ' . $storeHash);
 
-            \Illuminate\Support\Facades\DB::setTablePrefix(str_replace('stores/', '', $storeHash) . '_');
+            $prefix = Config::get('database.connections.tenant.prefix');
+
+            if (!empty($prefix)) {
+                $prefix = $prefix . '_' . str_replace('stores/', '', $storeHash) . '_';
+            } else {
+                $prefix = str_replace('stores/', '', $storeHash) . '_';
+            }
+
+            \Illuminate\Support\Facades\DB::setTablePrefix($prefix);
 
             \Illuminate\Support\Facades\Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
 

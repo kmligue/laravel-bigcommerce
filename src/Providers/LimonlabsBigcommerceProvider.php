@@ -8,6 +8,17 @@ use Laravel\Cashier\Cashier;
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
     /**
+     * Register services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        // register the helper function
+        require_once __DIR__.'/../helpers.php';
+    }
+
+    /**
      * Bootstrap services.
      *
      * @return void
@@ -46,6 +57,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         'limonlabs-bigcommerce-config');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
+        $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');
 
         Cashier::useCustomerModel(\Limonlabs\Bigcommerce\Models\StoreInfo::class);
     }

@@ -7,6 +7,7 @@ use Laravel\Cashier\Billable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class StoreInfo extends Authenticatable
 {
@@ -29,7 +30,15 @@ class StoreInfo extends Authenticatable
     protected static function booted()
     {
         static::created(function ($storeInfo) {
-            DB::setTablePrefix(str_replace('stores/', '', $storeInfo->store_hash) . '_');
+            $prefix = Config::get('database.connections.tenant.prefix');
+
+            if (!empty($prefix)) {
+                $prefix = $prefix . '_' . str_replace('stores/', '', $storeInfo->store_hash) . '_';
+            } else {
+                $prefix = str_replace('stores/', '', $storeInfo->store_hash) . '_';
+            }
+
+            DB::setTablePrefix($prefix);
 
             Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
         });
