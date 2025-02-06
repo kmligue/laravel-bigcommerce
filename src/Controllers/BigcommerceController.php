@@ -38,7 +38,7 @@ class BigcommerceController
         if (app()->environment('local')) {
             return config('bigcommerce.bc_local_access_token');
         } else {
-            $store_info = StoreInfo::where('user_id', $request->session()->get('user_id'))->first();
+            $store_info = tenant_class()::where('user_id', $request->session()->get('user_id'))->first();
             if ($store_info) {
                 return $store_info->access_token;
             }
@@ -85,7 +85,7 @@ class BigcommerceController
                 $request->session()->put('user_id', $data['user']['id']);
                 $request->session()->put('user_email', $data['user']['email']);
 
-                $store_info = StoreInfo::where('store_hash', $data['context'])->first();
+                $store_info = tenant_class()::where('store_hash', $data['context'])->first();
 
                 if ($store_info) {
                     $store_info->update([
@@ -95,7 +95,7 @@ class BigcommerceController
                         'timezone' => $this->getStoreTimezone($data['context'], $data['access_token'])
                     ]);
                 } else {
-                    $store_info = StoreInfo::create([
+                    $store_info = tenant_class()::create([
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
@@ -168,7 +168,7 @@ class BigcommerceController
             return redirect('error')->with('error', 'The signed request from BigCommerce was empty.');
         }
 
-        $store_info = StoreInfo::where('store_hash', $verifiedSignedRequestData['context'])->first();
+        $store_info = tenant_class()::where('store_hash', $verifiedSignedRequestData['context'])->first();
 
         if ($store_info) {
             $user_id = $verifiedSignedRequestData['user']['id'];
