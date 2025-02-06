@@ -293,8 +293,13 @@ class BigcommerceController
     protected function installWebhooks($store) {
         if ($store->webhooks->count() == 0) {
             $hooks = config('webhooks');
+            $storeHash = str_replace('stores/', '', $store->store_hash);
 
             foreach ($hooks as $hook) {
+                foreach ($hook as $key => $value) {
+                    $hook[$key] = str_replace('{store_hash}', $storeHash, $value);
+                }
+
                 $response = Http::withHeaders([
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
@@ -323,12 +328,16 @@ class BigcommerceController
 
     protected function installScripts($data) {
         $scripts = config('scripts.scripts');
-
         $styles = config('scripts.scripts');
+        $storeHash = str_replace('stores/', '', $data['context']);
 
         $client = new Client();
 
         foreach ($styles as $style) {
+            foreach ($style as $key => $value) {
+                $style[$key] = str_replace('{store_hash}', $storeHash, $value);
+            }
+
             $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
                 'headers' => [
                     'Accept' => 'application/json',
@@ -350,6 +359,10 @@ class BigcommerceController
         }
 
         foreach ($scripts as $script) {
+            foreach ($script as $key => $value) {
+                $script[$key] = str_replace('{store_hash}', $storeHash, $value);
+            }
+
             $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
                 'headers' => [
                     'Accept' => 'application/json',
