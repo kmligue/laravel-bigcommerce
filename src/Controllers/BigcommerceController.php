@@ -297,7 +297,7 @@ class BigcommerceController
 
             foreach ($hooks as $hook) {
                 foreach ($hook as $key => $value) {
-                    $hook[$key] = str_replace('{store_hash}', $storeHash, $value);
+                    $hook[$key] = str_replace('{storeHash}', $storeHash, $value);
                 }
 
                 $response = Http::withHeaders([
@@ -335,7 +335,7 @@ class BigcommerceController
 
         foreach ($styles as $style) {
             foreach ($style as $key => $value) {
-                $style[$key] = str_replace('{store_hash}', $storeHash, $value);
+                $style[$key] = str_replace('{storeHash}', $storeHash, $value);
             }
 
             $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
@@ -360,7 +360,7 @@ class BigcommerceController
 
         foreach ($scripts as $script) {
             foreach ($script as $key => $value) {
-                $script[$key] = str_replace('{store_hash}', $storeHash, $value);
+                $script[$key] = str_replace('{storeHash}', $storeHash, $value);
             }
 
             $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
