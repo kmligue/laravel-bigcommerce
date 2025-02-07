@@ -36,7 +36,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         }
 
         $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
+            __DIR__.'/../Database/migrations' => database_path('migrations'),
         ], 'limonlabs-bigcommerce-migrations');
 
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
