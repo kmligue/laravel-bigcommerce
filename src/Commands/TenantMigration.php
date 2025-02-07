@@ -53,7 +53,7 @@ class TenantMigration extends Command
 
             \Illuminate\Support\Facades\DB::setTablePrefix($prefix);
 
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--path' => 'database/migrations/tenant', '--force' => true]);
 
             $this->info('Migration complete');
         } else {
