@@ -133,7 +133,7 @@ class BigcommerceController
                 abort(404);
             }
 
-            return view('limonlabs/bigcommerce::overview.index', compact('storeHash'));
+            return redirect(get_install_redirect());
         } catch (\RequestException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorMessage = "An error occurred.";
@@ -200,7 +200,7 @@ class BigcommerceController
                 $params['success'] = $request->get('success');
             }
 
-            return redirect('/' . $storeHash . '/overview?' . http_build_query($params));
+            return redirect(get_load_redirect() . '?' . http_build_query($params));
         } else {
             return redirect('error')->with('error', 'Store not found.');
         }
