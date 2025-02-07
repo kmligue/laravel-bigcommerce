@@ -31,7 +31,8 @@ class StoreInfo extends Authenticatable
     protected static function booted()
     {
         static::created(function ($storeInfo) {
-            $prefix = Config::get('database.connections.tenant.prefix');
+            $oldPrefix = Config::get('database.connections.tenant.prefix');
+            $prefix = $oldPrefix;
 
             if (!empty($prefix)) {
                 $prefix = $prefix . '_' . str_replace('stores/', '', $storeInfo->store_hash) . '_';
@@ -43,7 +44,7 @@ class StoreInfo extends Authenticatable
 
             Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
 
-            DB::setTablePrefix('');
+            DB::setTablePrefix($oldPrefix);
         });
     }
 }
