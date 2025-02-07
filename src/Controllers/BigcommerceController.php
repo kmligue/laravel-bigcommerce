@@ -86,13 +86,19 @@ class BigcommerceController
                 $request->session()->put('user_email', $data['user']['email']);
 
                 $store_info = tenant_class()::where('store_hash', $data['context'])->first();
+                $store_data = $this->getStoreInfo($data['context'], $data['access_token']);
+                $timezone = '';
+
+                if (isset($store_data['timezone']) && isset($store_data['timezone']['name'])) {
+                    $timezone = $store_data['timezone']['name'];
+                }
 
                 if ($store_info) {
                     $store_info->update([
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_email' => $data['user']['email'],
-                        'timezone' => $this->getStoreTimezone($data['context'], $data['access_token'])
+                        'timezone' => $timezone
                     ]);
                 } else {
                     $store_info = tenant_class()::create([
@@ -100,7 +106,7 @@ class BigcommerceController
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
                         'user_email' => $data['user']['email'],
-                        'timezone' => $this->getStoreTimezone($data['context'], $data['access_token'])
+                        'timezone' => $timezone
                     ]);
                 }
 
@@ -200,26 +206,20 @@ class BigcommerceController
         }
     }
 
-    private function getStoreTimezone($store_hash, $access_token) {
-        $client = new Client();
-        $result = $client->request('GET', 'https://api.bigcommerce.com/'. $store_hash .'/v2/store', [
-            'headers' => [
-                'X-Auth-Token'  => $access_token,
-                'Content-Type'  => 'application/json',
-            ]
-        ]);
+    private function getStoreInfo($store_hash, $access_token) {
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'X-Auth-Token' => $access_token
+        ])->get('https://api.bigcommerce.com/'. $store_hash .'/v2/store');
 
-        $statusCode = $result->getStatusCode();
+        if ($response->ok()) {
+            $json = $response->json();
 
-        if ($statusCode == 200) {
-            $data = json_decode($result->getBody(), true);
-
-            if (isset($data['timezone']) && isset($data['timezone']['name'])) {
-                return $data['timezone']['name'];
-            }
+            return $json;
         }
 
-        return '';
+        return [];
     }
 
     private function verifySignedRequest($signedRequest, $appRequest)
