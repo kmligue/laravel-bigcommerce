@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 class StoreInfo extends Authenticatable
 {
@@ -26,6 +27,24 @@ class StoreInfo extends Authenticatable
 
     public function webhooks() {
         return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
+    }
+
+    public function getChannelsAttribute() {
+        $channels = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'X-Auth-Token' => $this->access_token
+        ])->get('https://api.bigcommerce.com/' . $this->store_hash . '/v3/channels');
+        
+        if ($channels->successful()) {
+            $json = $channels->json();
+
+            if (isset($json['data'])) {
+                return $json['data'];
+            }
+        }
+
+        return [];
     }
 
     protected static function booted()

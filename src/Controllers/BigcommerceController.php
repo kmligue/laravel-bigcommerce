@@ -120,7 +120,7 @@ class BigcommerceController
             $user_id = $data['user']['id'];
             $storeHash = $data['context'];
 
-            $this->installScripts($data);
+            $this->installScripts($store_info);
             $this->installWebhooks($store_info);
 
             if (auth()->check()) {
@@ -326,10 +326,10 @@ class BigcommerceController
         }
     }
 
-    protected function installScripts($data) {
+    protected function installScripts($store_info) {
         $scripts = config('scripts.scripts');
         $styles = config('scripts.styles');
-        $storeHash = str_replace('stores/', '', $data['context']);
+        $storeHash = str_replace('stores/', '', $store_info->store_hash);
 
         $client = new Client();
 
@@ -338,24 +338,27 @@ class BigcommerceController
                 $style[$key] = str_replace('{storeHash}', $storeHash, $value);
             }
 
-            $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'X-Auth-Token' => $data['access_token']
-                ],
-                'json' => [
-                    'name' => $style['name'],
-                    'description' => $style['description'],
-                    'html' => $style['html'],
-                    'auto_uninstall' => true,
-                    'load_method' => 'default',
-                    'location' => 'head',
-                    'visibility' => 'all_pages',
-                    'kind' => 'script_tag',
-                    'consent_category' => 'essential'
-                ]
-            ]);
+            foreach ($store_info->channels as $channel) {
+                $client->request('POST', 'https://api.bigcommerce.com/'. $store_info->store_hash .'/v3/content/scripts', [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $store_info->access_token
+                    ],
+                    'json' => [
+                        'name' => $style['name'],
+                        'description' => $style['description'],
+                        'html' => $style['html'],
+                        'auto_uninstall' => true,
+                        'load_method' => 'default',
+                        'location' => 'head',
+                        'visibility' => 'all_pages',
+                        'kind' => 'script_tag',
+                        'consent_category' => 'essential',
+                        'channel_id' => $channel['id']
+                    ]
+                ]);
+            }
         }
 
         foreach ($scripts as $script) {
@@ -363,24 +366,27 @@ class BigcommerceController
                 $script[$key] = str_replace('{storeHash}', $storeHash, $value);
             }
 
-            $client->request('POST', 'https://api.bigcommerce.com/'. $data['context'] .'/v3/content/scripts', [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'X-Auth-Token' => $data['access_token']
-                ],
-                'json' => [
-                    'name' => $script['name'],
-                    'description' => $script['description'],
-                    'src' => $script['src'],
-                    'auto_uninstall' => true,
-                    'load_method' => 'default',
-                    'location' => isset($script['location']) ? $script['location'] : 'footer',
-                    'visibility' => 'all_pages',
-                    'kind' => 'src',
-                    'consent_category' => 'essential'
-                ]
-            ]);
+            foreach ($store_info->channels as $channel) {
+                $client->request('POST', 'https://api.bigcommerce.com/'. $store_info->store_hash .'/v3/content/scripts', [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'X-Auth-Token' => $store_info->access_token
+                    ],
+                    'json' => [
+                        'name' => $script['name'],
+                        'description' => $script['description'],
+                        'src' => $script['src'],
+                        'auto_uninstall' => true,
+                        'load_method' => 'default',
+                        'location' => isset($script['location']) ? $script['location'] : 'footer',
+                        'visibility' => 'all_pages',
+                        'kind' => 'src',
+                        'consent_category' => 'essential',
+                        'channel_id' => $channel['id']
+                    ]
+                ]);
+            }
         }
     }
 }
