@@ -351,7 +351,7 @@ class BigcommerceController
                         'html' => $style['html'],
                         'auto_uninstall' => true,
                         'load_method' => 'default',
-                        'location' => 'head',
+                        'location' => isset($style['location']) ? $style['location'] : 'head',
                         'visibility' => 'all_pages',
                         'kind' => 'script_tag',
                         'consent_category' => 'essential',
