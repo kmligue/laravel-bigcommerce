@@ -53,6 +53,12 @@ class BillingController
             tenant()->subscription('default')->cancelNow();
         }
 
+        if ($plan == 'free') {
+            return response()->json([
+                'success' => true
+            ]);
+        }
+
         $plans = config('plans');
         $priceId = '';
 
