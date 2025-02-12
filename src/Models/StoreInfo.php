@@ -25,6 +25,10 @@ class StoreInfo extends Authenticatable
         'settings'
     ];
 
+    protected $casts = [
+        'settings' => 'array'
+    ];
+
     public function webhooks() {
         return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
     }
@@ -61,7 +65,7 @@ class StoreInfo extends Authenticatable
 
             DB::setTablePrefix($prefix);
 
-            Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
+            Artisan::call('migrate', ['--path' => 'database/migrations/tenant', '--force' => true]);
 
             DB::setTablePrefix($oldPrefix);
         });

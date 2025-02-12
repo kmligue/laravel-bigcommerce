@@ -159,6 +159,9 @@ class BigcommerceController
     public function load(Request $request)
     {
         $signedPayload = $request->input('signed_payload');
+        $signedPayloadJwt = $request->input('signed_payload_jwt');
+        $jwtData = json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $signedPayloadJwt)[1]))), true);
+
         if (!empty($signedPayload)) {
             $verifiedSignedRequestData = $this->verifySignedRequest($signedPayload, $request);
             if ($verifiedSignedRequestData !== null) {
@@ -200,7 +203,12 @@ class BigcommerceController
                 $params['success'] = $request->get('success');
             }
 
-            return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+            // Note:: This is for apps that have app extension installed. If the app extension is not installed, then the app will redirect to the app's dashboard. We are using the jwtData['url'] to redirect to the app extension's dashboard.
+            if ($jwtData['url'] == '/') {
+                return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+            } else {
+                return redirect($jwtData['url']);
+            }
         } else {
             return redirect('error')->with('error', 'Store not found.');
         }
