@@ -4,6 +4,7 @@ namespace Limonlabs\Bigcommerce\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Illuminate\Support\Facades\Config;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
@@ -61,6 +62,6 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
         $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');
 
-        Cashier::useCustomerModel(\Limonlabs\Bigcommerce\Models\StoreInfo::class);
+        Cashier::useCustomerModel(Config::get('tenant.tenant'));
     }
 }
