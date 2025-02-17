@@ -27,7 +27,7 @@
             <div class="container mx-auto px-4">
 
                 <div class="max-w-3xl mx-auto text-center">
-                    <p class="text-gray-500 xl:mx-12">Choose your plan for Auth Capture</p>
+                    <p class="text-gray-500 xl:mx-12">Choose your plan for {{ config('app.name') }}</p>
                 </div>
 
                 <div class="pricing-plans lg:flex lg:-mx-4 mt-6 md:mt-12">
