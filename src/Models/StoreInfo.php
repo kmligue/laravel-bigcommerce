@@ -33,6 +33,26 @@ class StoreInfo extends Authenticatable
         return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
     }
 
+    public function getPlanAttribute() {
+        $plans = Config::get('plans');
+        $subscription = $this->subscription('default');
+        $_plan = [];
+
+        foreach ($plans as $key => $plan) {
+            if ($subscription && $plan['plan_id'] == $subscription->stripe_price) {
+                $_plan = $plan;
+                
+                break;
+            }
+        }
+
+        if (empty($_plan)) {
+            $_plan = $plans['free'];
+        }
+
+        return $_plan;
+    }
+
     public function getChannelsAttribute() {
         $channels = Http::withHeaders([
             'Accept' => 'application/json',
