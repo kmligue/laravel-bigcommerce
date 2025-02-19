@@ -46,7 +46,7 @@ class StoreInfo extends Authenticatable
             }
         }
 
-        if (empty($_plan)) {
+        if (empty($_plan) && isset($plans['free'])) {
             $_plan = $plans['free'];
         }
 
