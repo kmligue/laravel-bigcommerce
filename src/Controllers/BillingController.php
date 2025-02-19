@@ -9,7 +9,7 @@ class BillingController
 {
     public function index(Request $request, $storeHash) {
         $storeHash = 'stores/' . $storeHash;
-        $subscription = tenant()->subscription(env('STRIPE_PRODUCT_ID'));
+        $subscription = tenant()->subscription('default');
 
         return view('limonlabs/bigcommerce::billing.index', compact('storeHash', 'subscription'));
     }
@@ -29,7 +29,7 @@ class BillingController
             if (isset($plans[$plan]) && !empty($plans[$plan])) {
                 $priceId = $plans[$plan]['plan_id'];
 
-                $response = tenant()->newSubscription(env('STRIPE_PRODUCT_ID'), $priceId)->create($request->paymentMethod, [
+                $response = tenant()->newSubscription('default', $priceId)->create($request->paymentMethod, [
                     'email' => tenant()->user_email
                 ]);
 
@@ -50,7 +50,7 @@ class BillingController
 
     public function select(Request $request, $storeHash, $plan) {
         if (tenant()->subscription() && tenant()->subscription()->stripe_status == 'active') {
-            tenant()->subscription(env('STRIPE_PRODUCT_ID'))->cancelNow();
+            tenant()->subscription('default')->cancelNow();
         }
 
         if ($plan == 'free') {
@@ -72,14 +72,14 @@ class BillingController
                     $paymentMethod = tenant()->paymentMethods()->first();
                 }
 
-                tenant()->newSubscription(env('STRIPE_PRODUCT_ID'), $priceId)->create($paymentMethod->id);
+                tenant()->newSubscription('default', $priceId)->create($paymentMethod->id);
 
                 return response()->json([
                     'success' => true
                 ]);
             }
 
-            $checkout = tenant()->newSubscription(env('STRIPE_PRODUCT_ID'), $priceId)->checkout([
+            $checkout = tenant()->newSubscription('default', $priceId)->checkout([
                 'cancel_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=false',
                 'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=true'
             ]);

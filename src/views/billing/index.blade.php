@@ -31,18 +31,24 @@
                 </div>
 
                 <div class="pricing-plans lg:flex lg:-mx-4 mt-6 md:mt-12">
+                    @php
+                        $currentPlan = [];
+                        
+                        foreach ($plans as $plan) {
+                            if (tenant()->subscribedToPrice($plan['plan_id'])) {
+                                $currentPlan = $plan;
+
+                                break;
+                            }
+                        }
+                        
+                        if (empty($currentPlan)) {
+                            $currentPlan = $plans['free'];
+                        }
+                    @endphp
 
                     @foreach ($plans as $key => $plan)
                         @if ($plan['show'])
-                            @php
-                                $currentPlan = [];
-
-                                foreach ($plans as $plan2) {
-                                    if ($subscription && $subscription->stripe_price == $plan2['plan_id']) {
-                                        $currentPlan = $plan2;
-                                    }
-                                }
-                            @endphp
 
                             <div class="pricing-plan-wrap lg:w-1/3 my-4 md:my-6">
                                 <div class="pricing-plan border border-indigo-600 border-solid text-center max-w-sm mx-auto transition-colors duration-300 {{ (($subscription && $subscription->stripe_price == $plan['plan_id']) || ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])) ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" style="min-height: 565px;">
