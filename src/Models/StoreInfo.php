@@ -35,7 +35,7 @@ class StoreInfo extends Authenticatable
 
     public function getPlanAttribute() {
         $plans = Config::get('plans');
-        $subscription = $this->subscription('default');
+        $subscription = $this->subscription(env('STRIPE_PRODUCT_ID'));
         $_plan = [];
 
         foreach ($plans as $key => $plan) {
