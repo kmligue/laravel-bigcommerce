@@ -32,30 +32,17 @@
 
                 <div class="pricing-plans lg:flex lg:-mx-4 mt-6 md:mt-12">
                     @php
-                        $currentPlan = [];
-                        
-                        foreach ($plans as $plan) {
-                            if (tenant()->subscribedToPrice($plan['plan_id'])) {
-                                $currentPlan = $plan;
-
-                                break;
-                            }
-                        }
-                        
-                        if (empty($currentPlan)) {
-                            $currentPlan = $plans['free'];
-                        }
+                        $currentPlan = tenant()->plan;
                     @endphp
 
                     @foreach ($plans as $key => $plan)
                         @if ($plan['show'])
-
-                            <div class="pricing-plan-wrap lg:w-1/3 my-4 md:my-6">
-                                <div class="pricing-plan border border-indigo-600 border-solid text-center max-w-sm mx-auto transition-colors duration-300 {{ (($subscription && $subscription->stripe_price == $plan['plan_id']) || ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])) ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" style="min-height: 565px;">
+                        <div class="pricing-plan-wrap lg:w-1/3 my-4 md:my-6">
+                                <div class="pricing-plan border border-indigo-600 border-solid text-center max-w-sm mx-auto transition-colors duration-300 {{ (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])) ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" style="min-height: 565px;">
                                     <div class="p-6 md:py-8">
                                         <h4 class="font-medium leading-tight text-2xl mb-2">{{ ucfirst($key) }}</h4>
                                     </div>
-                                    <div class="pricing-amount p-6 transition-colors duration-300 {{ (($subscription && $subscription->stripe_price == $plan['plan_id']) || ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])) ? 'bg-indigo-600' : 'bg-indigo-100' }}">
+                                    <div class="pricing-amount p-6 transition-colors duration-300 {{ (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])) ? 'bg-indigo-600' : 'bg-indigo-100' }}">
                                         <div class=""><span class="text-4xl font-semibold">${{ $plan['price'] }}</span> /month</div>
                                     </div>
                                     <div class="p-6">
@@ -65,38 +52,12 @@
                                             @endforeach
                                         </ul>
                                         <div class="mt-6 py-4">
-                                            @if ($subscription && $subscription->stripe_price == $plan['plan_id'])
-                                                @if ($subscription && $subscription->stripe_status != 'canceled')
-                                                    @if ($subscription->stripe_price == $plan['plan_id'])
-                                                        <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
-                                                    @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
-                                                            <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">Downgrade</button>
-                                                        </form>
-                                                    @endif
-                                                @else
-                                                    @if ($subscription && $subscription->stripe_price == $plan['plan_id'])
-                                                        <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
-                                                    @endif
-                                                @endif
+                                            @if ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])
+                                                <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                             @else
-                                                @if ($subscription && $subscription->stripe_status != 'canceled')
-                                                    @if ($subscription->stripe_price == $plan['plan_id'])
-                                                        <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
-                                                    @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
-                                                            <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
-                                                        </form>
-                                                    @endif
-                                                @else
-                                                    @if ($currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])
-                                                        <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
-                                                    @else
-                                                        <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
-                                                            <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan && $currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
-                                                        </form>
-                                                    @endif
-                                                @endif
+                                                <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
+                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
+                                                </form>
                                             @endif
                                         </div>
                                     </div>
