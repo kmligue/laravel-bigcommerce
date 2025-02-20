@@ -32,4 +32,4 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/billing/{plan}', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'show']);
 });
 
-Route::get('limonadmin', [\Limonlabs\Bigcommerce\Controllers\LimonAdminController::class, 'index']);
+Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\LimonAdminController::class, 'index']);
