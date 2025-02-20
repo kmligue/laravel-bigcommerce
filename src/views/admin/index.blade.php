@@ -25,11 +25,11 @@
                                 @if ($store->plan['plan_id'] == Config::get('plans.free.plan_id'))
                                     Free
                                 @elseif ($store->plan['plan_id'] == Config::get('plans.bronze.plan_id'))
-                                    Bronze
+                                    Bronze (${{ number_format(Config::get('plans.bronze.price'), 2) }}/month)
                                 @elseif ($store->plan['plan_id'] == Config::get('plans.silver.plan_id'))
-                                    Silver
+                                    Silver (${{ number_format(Config::get('plans.silver.price'), 2) }}/month)
                                 @elseif ($store->plan['plan_id'] == Config::get('plans.gold.plan_id'))
-                                    Gold
+                                    Gold (${{ number_format(Config::get('plans.gold.price'), 2) }}/month)
                                 @endif
                             @endif
                         </td>
