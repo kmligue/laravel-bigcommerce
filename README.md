@@ -54,6 +54,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 class StoreInfo extends Authenticatable
 {
@@ -70,8 +71,49 @@ class StoreInfo extends Authenticatable
         'settings'
     ];
 
+    protected $casts = [
+        'settings' => 'array'
+    ];
+
     public function webhooks() {
         return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
+    }
+
+    public function getPlanAttribute() {
+        $plans = Config::get('plans');
+        $_plan = [];
+
+        foreach ($plans as $key => $plan) {
+            if (tenant()->subscribedToPrice($plan['plan_id'])) {
+                $_plan = $plan;
+
+                break;
+            }
+        }
+
+        if (empty($_plan) && isset($plans['free'])) {
+            $_plan = $plans['free'];
+        }
+
+        return $_plan;
+    }
+
+    public function getChannelsAttribute() {
+        $channels = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'X-Auth-Token' => $this->access_token
+        ])->get('https://api.bigcommerce.com/' . $this->store_hash . '/v3/channels');
+        
+        if ($channels->successful()) {
+            $json = $channels->json();
+
+            if (isset($json['data'])) {
+                return $json['data'];
+            }
+        }
+
+        return [];
     }
 
     protected static function booted()
@@ -88,7 +130,7 @@ class StoreInfo extends Authenticatable
 
             DB::setTablePrefix($prefix);
 
-            Artisan::call('migrate', ['--path' => 'database/migrations/tenant']);
+            Artisan::call('migrate', ['--path' => 'database/migrations/tenant', '--force' => true]);
 
             DB::setTablePrefix($oldPrefix);
         });
@@ -131,4 +173,20 @@ class Feedback extends Model
         'user_agent' => 'array',
     ];
 }
+```
+# Stripe Keys
+&bullet; Set stripe credentials in .env file. Don't also forget to set the stripe price id's for the plans.
+```
+STRIPE_KEY=pk_test_nJQKMa1qyBWYURVUZC15LmVB
+STRIPE_SECRET=sk_test_D1uu9XXITIS9htvBNeA8xNjt
+STRIPE_WEBHOOK_SECRET=whsec_yqfXz53AZWuA1HwJRyIcVyxMO4uxUMKK
+
+STRIPE_BRONZE_PLAN_ID=price_1Qu23jDp8CuNIE4Gtp135KEP
+STRIPE_SILVER_PLAN_ID=price_1Qu246Dp8CuNIE4GcG216veP
+STRIPE_GOLD_PLAN_ID=price_1Qu24HDp8CuNIE4GbY3U4mCF
+```
+# Help Form
+&bullet; Form uses https://www.staticforms.xyz/. Add the api key in .env file.
+```
+STATICFORMS_ACCESS_KEY=b9c3f48b-3e4e-4d60-8295-cb7211501eec
 ```
