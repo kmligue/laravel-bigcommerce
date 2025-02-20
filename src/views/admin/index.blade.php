@@ -12,6 +12,7 @@
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Store Hash</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Email</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
+                    <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Discount</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Date</th>
                 </tr>
             </thead>
@@ -31,6 +32,24 @@
                                 @elseif ($store->plan['plan_id'] == Config::get('plans.gold.plan_id'))
                                     Gold (${{ number_format(Config::get('plans.gold.price'), 2) }}/month)
                                 @endif
+                            @endif
+                        </td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
+                            @php
+                                $subscription = $store->subscription('default');
+                            @endphp
+                            @if ($store->plan)
+                                @if ($store->plan['plan_id'] != Config::get('plans.free.plan_id'))
+                                    @if ($subscription->discount())
+                                        {{ $subscription->discount()->amount_off / 100 }}% off
+                                    @else
+                                        None
+                                    @endif
+                                @else
+                                    None
+                                @endif
+                            @else
+                                None
                             @endif
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->created_at->format('F d, Y') }}</td>
