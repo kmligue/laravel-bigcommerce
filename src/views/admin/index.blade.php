@@ -13,6 +13,7 @@
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Email</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Discount</th>
+                    <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Date</th>
                 </tr>
             </thead>
@@ -52,10 +53,95 @@
                                 None
                             @endif
                         </td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
+                            <div class="flex items-center gap-4">
+                                @php
+                                    $plans = Config::get('plans');
+                                @endphp
+
+                                <select class="border plan" data-current-plan="{{ $store->plan['plan_id'] }}" data-store-hash="{{ $store->store_hash }}">
+                                    @foreach ($plans as $key => $plan)
+                                        <option value="{{ $key }}" {{ ($store->plan && $store->plan['plan_id'] == $plan['plan_id']) ? 'selected' : '' }} data-plan="{{ $plan['plan_id'] }}">
+                                            {{ ucfirst($key) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="plan-change border px-1 disabled:bg-[#eee]" disabled>Change</button>
+                            </div>
+                        </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->created_at->format('F d, Y') }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
+@endsection
+
+@section('footer')
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function() {
+        $('select.plan').on('change', function(e) {
+            var currentPlan = $(this).data('current-plan');
+            var selectedPlan = $(this).find(':selected').data('plan');
+
+            if (currentPlan != selectedPlan) {
+                $(this).next().prop('disabled', false);
+            } else {
+                $(this).next().prop('disabled', true);
+            }
+        });
+
+        $('.plan-change').on('click', function(e) {
+            e.preventDefault();
+
+            // Add loading spinner on button
+            $(this).html('Change <i class="fas fa-spinner fa-spin"></i>');
+
+            var storeHash = $(this).prev().data('store-hash');
+            var plan = $(this).prev().val();
+            var self = this;
+
+            $.ajax({
+                url: '/api/' + storeHash + '/billing/' + plan + '/select',
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        if (response.url) {
+                            // This returns a stripe url. Which means user needs to enter their card details
+                            // For now, we will just show an error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Customer needs to enter their card details to proceed'
+                            });
+
+                            $(self).html('Change');
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+
+                        $(self).html('Change');
+                    }
+                }
+            });
+        });
+    });
+</script>
 @endsection
