@@ -45,9 +45,9 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
 
         // Views
         $this->loadViewsFrom(__DIR__.'/../views', 'limonlabs/bigcommerce');
-        $this->publishes([
-            __DIR__.'/../views' => resource_path('views/vendor/limonlabs/bigcommerce'),
-        ], 'limonlabs-bigcommerce-views');
+        // $this->publishes([
+        //     __DIR__.'/../views' => resource_path('views/vendor/limonlabs/bigcommerce'),
+        // ], 'limonlabs-bigcommerce-views');
         
         $this->publishes(
             [
