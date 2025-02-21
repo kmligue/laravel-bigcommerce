@@ -100,7 +100,12 @@ class BigcommerceController
                         'first_name' => $store_data['first_name'],
                         'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
-                        'timezone' => $timezone
+                        'timezone' => $timezone,
+                        'secure_url' => $store_data['secure_url'],
+                        'status' => $store_data['status'],
+                        'country' => $store_data['country'],
+                        'plan_level' => $store_data['plan_level'],
+                        'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
                     ]);
                 } else {
                     $store_info = tenant_class()::create([
@@ -110,7 +115,12 @@ class BigcommerceController
                         'first_name' => $store_data['first_name'],
                         'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
-                        'timezone' => $timezone
+                        'timezone' => $timezone,
+                        'secure_url' => $store_data['secure_url'],
+                        'status' => $store_data['status'],
+                        'country' => $store_data['country'],
+                        'plan_level' => $store_data['plan_level'],
+                        'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
                     ]);
                 }
 

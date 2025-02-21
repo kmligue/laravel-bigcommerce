@@ -24,6 +24,11 @@ class StoreInfo extends Authenticatable
         'last_name',
         'user_email',
         'timezone',
+        'secure_url',
+        'status',
+        'country',
+        'plan_level',
+        'multi_storefront_enabled',
         'settings'
     ];
 
