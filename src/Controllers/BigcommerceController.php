@@ -97,6 +97,8 @@ class BigcommerceController
                     $store_info->update([
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
+                        'first_name' => $store_data['first_name'],
+                        'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
                         'timezone' => $timezone
                     ]);
@@ -105,6 +107,8 @@ class BigcommerceController
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
+                        'first_name' => $store_data['first_name'],
+                        'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
                         'timezone' => $timezone
                     ]);

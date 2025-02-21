@@ -10,6 +10,7 @@
             <thead>
                 <tr>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Store Hash</th>
+                    <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Name</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Email</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Discount</th>
@@ -21,6 +22,7 @@
                 @foreach ($stores as $store)
                     <tr>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->store_hash }}</td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->first_name }} {{ $store->last_name }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 w-1/6">{{ $store->user_email }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
                             @if ($store->plan)
