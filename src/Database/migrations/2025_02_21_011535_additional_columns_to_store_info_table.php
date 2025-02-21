@@ -26,7 +26,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('store_info', function (Blueprint $table) {
-            //
+            $table->dropColumn('secure_url');
+            $table->dropColumn('status');
+            $table->dropColumn('country');
+            $table->dropColumn('plan_level');
+            $table->dropColumn('multi_storefront_enabled');
         });
     }
 };
