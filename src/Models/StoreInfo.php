@@ -45,7 +45,7 @@ class StoreInfo extends Authenticatable
         $_plan = [];
 
         foreach ($plans as $key => $plan) {
-            if (tenant()->subscribedToPrice($plan['plan_id'])) {
+            if ($this->subscribedToPrice($plan['plan_id'])) {
                 $_plan = $plan;
 
                 break;
