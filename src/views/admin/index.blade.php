@@ -1,5 +1,42 @@
 @extends('limonlabs/bigcommerce::layouts.app-admin')
 
+@section('head')
+    <style>
+        .tooltip {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .tooltip ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tooltip li {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tooltip li:last-child {
+            border-bottom: none;
+        }
+
+        .store-hash:hover .tooltip {
+            display: block;
+        }
+
+        .info-icon + .tooltip {
+            top: 0;
+            left: 0;
+            display: none;
+        }
+    </style>
+@endsection
+
 @section('content')
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Limon Admin'])
 
@@ -21,7 +58,43 @@
             <tbody class="bg-white">
                 @foreach ($stores as $store)
                     <tr>
-                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->store_hash }}</td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 store-hash">
+                            <div class="relative">
+                                <i class="fa-solid fa-circle-info info-icon"></i> 
+                                {{ $store->store_hash }}
+                                <div class="tooltip border p-3 absolute">
+                                    <ul>
+                                        <li>
+                                            user_id: {{ $store->user_id }}
+                                        </li>
+                                        <li>
+                                            secure_url: {{ $store->secure_url }}
+                                        </li>
+                                        <li>
+                                            user_email: {{ $store->user_email }}
+                                        </li>
+                                        <li>
+                                            timezone: {{ $store->timezone }}
+                                        </li>
+                                        <li>
+                                            secure_url: {{ $store->secure_url }}
+                                        </li>
+                                        <li>
+                                            status: {{ $store->status }}
+                                        </li>
+                                        <li>
+                                            country: {{ $store->country }}
+                                        </li>
+                                        <li>
+                                            plan_level: {{ $store->plan_level }}
+                                        </li>
+                                        <li>
+                                            multi_storefront_enabled: {{ $store->multi_storefront_enabled ? 'Yes' : 'No' }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->first_name }} {{ $store->last_name }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 w-1/6">{{ $store->user_email }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
