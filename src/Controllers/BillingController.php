@@ -80,8 +80,8 @@ class BillingController
             }
 
             $checkout = tenant()->newSubscription('default', $priceId)->checkout([
-                'cancel_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=false',
-                'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . env('BC_APP_ID') . '?action=upgrade&success=true'
+                'cancel_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . config('bigcommerce.bc_app_id') . '?action=upgrade&success=false',
+                'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . config('bigcommerce.bc_app_id') . '?action=upgrade&success=true'
             ]);
 
             return response()->json([

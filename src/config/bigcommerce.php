@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'bc_app_id' => env('BC_APP_ID'),
     'bc_local_client_id' => env('BC_LOCAL_CLIENT_ID'),
     'bc_app_client_id' => env('BC_APP_CLIENT_ID'),
     'bc_local_secret' => env('BC_LOCAL_SECRET'),
