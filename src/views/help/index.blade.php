@@ -30,8 +30,8 @@
             </div>
 
             <input type="text" name="honeypot" style="display:none">
-            <input type="hidden" name="accessKey" value="{{ env('STATICFORMS_ACCESS_KEY') }}">
-            <input type="hidden" name="subject" value="Help from - {{ env('APP_NAME') }}" />
+            <input type="hidden" name="accessKey" value="{{ config('tenant.staticforms_access_key') }}">
+            <input type="hidden" name="subject" value="Help from - {{ config('app.name') }}" />
             <input type="hidden" name="redirectTo" value="{{ url('/' . $storeHash . '/help?success=1') }}">
 
             <div class="mb-5 text-right">
