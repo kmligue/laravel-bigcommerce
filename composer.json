@@ -17,7 +17,8 @@
     "minimum-stability": "dev",
     "require": {
         "laravel/cashier": "^15.6",
-        "aws/aws-sdk-php": "^3.337"
+        "aws/aws-sdk-php": "^3.337",
+        "sendgrid/sendgrid": "~7"
     },
     "extra": {
         "laravel": {

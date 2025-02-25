@@ -122,6 +122,18 @@ class BigcommerceController
                         'plan_level' => $store_data['plan_level'],
                         'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
                     ]);
+
+                    // Send email to the user
+                    try {
+                        \Limonlabs\Bigcommerce\SendGrid\Mail::getInstance()
+                                    ->setFrom(config('mail.from.address'), config('mail.from.name'))
+                                    ->setSubject('App Installed')
+                                    ->addTo($data['user']['email'], $store_data['first_name'] . ' ' . $store_data['last_name'])
+                                    ->addContent('text/html', view('limonlabs/bigcommerce::emails.app-installed')->render())
+                                    ->send();
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
                 }
 
                 // If the merchant installed the app via an external link, redirect back to the
