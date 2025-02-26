@@ -18,7 +18,8 @@
     "require": {
         "laravel/cashier": "^15.6",
         "aws/aws-sdk-php": "^3.337",
-        "sendgrid/sendgrid": "~7"
+        "sendgrid/sendgrid": "~7",
+        "onecentlin/laravel-adminer": "^7.0"
     },
     "extra": {
         "laravel": {

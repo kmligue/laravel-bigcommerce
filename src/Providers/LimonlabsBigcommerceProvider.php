@@ -29,6 +29,10 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         // register middleware
         $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
 
+        $this->app['router']->aliasMiddleware('adminer', \Illuminate\Cookie\Middleware\EncryptCookies::class);
+        $this->app['router']->pushMiddlewareToGroup('adminer', \Illuminate\Session\Middleware\StartSession::class);
+
+
         // register commands
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -62,6 +66,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
         $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');
         $this->mergeConfigFrom(__DIR__.'/../config/sendgrid.php', 'services');
+        $this->mergeConfigFrom(__DIR__.'/../config/adminer.php', 'adminer');
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
     }
