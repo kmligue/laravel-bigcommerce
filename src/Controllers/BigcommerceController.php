@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Limonlabs\Bigcommerce\Mail\AppInstalled;
 use Limonlabs\Bigcommerce\Mail\AppUninstalled;
+use Limonlabs\Bigcommerce\Mail\Admin\AppInstalled as AdminAppInstalled;
+use Limonlabs\Bigcommerce\Mail\Admin\AppUninstalled as AdminAppUninstalled;
 
 class BigcommerceController
 {
@@ -100,6 +102,7 @@ class BigcommerceController
                     $store_info->update([
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
+                        'name' => $store_data['name'],
                         'first_name' => $store_data['first_name'],
                         'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
@@ -115,6 +118,7 @@ class BigcommerceController
                         'store_hash' => $data['context'],
                         'access_token' => $data['access_token'],
                         'user_id' => $data['user']['id'],
+                        'name' => $store_data['name'],
                         'first_name' => $store_data['first_name'],
                         'last_name' => $store_data['last_name'],
                         'user_email' => $data['user']['email'],
@@ -126,8 +130,12 @@ class BigcommerceController
                         'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
                     ]);
 
-                    // Send email to the user
                     try {
+                        // Send email to the dev
+                        Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
+                            ->send(new AdminAppInstalled($store_info));
+
+                        // Send email to the store admin
                         Mail::to($store_data['email'], $store_data['first_name'] . ' ' . $store_data['last_name'])
                             ->send(new AppInstalled($store_info));
                     } catch (\Throwable $th) {
@@ -329,8 +337,12 @@ class BigcommerceController
                     $store_info->subscription('default')->cancelNow();
                 }
 
-                // Send uninstall email to the store
                 try {
+                    // Send email to the dev
+                    Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
+                            ->send(new AdminAppUninstalled($store_info));
+
+                    // Send uninstall email to the store
                     Mail::to($store_info->user_email, $store_info->first_name . ' ' . $store_info->last_name)
                         ->send(new AppUninstalled($store_info));
                 } catch (\Throwable $th) {

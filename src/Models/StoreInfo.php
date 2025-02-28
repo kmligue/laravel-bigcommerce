@@ -20,6 +20,7 @@ class StoreInfo extends Authenticatable
         'store_hash',
         'access_token',
         'user_id',
+        'name',
         'first_name',
         'last_name',
         'user_email',

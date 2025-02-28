@@ -62,11 +62,13 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 __DIR__.'/../config/tenant.php' => config_path('tenant.php'),
             ],
         'limonlabs-bigcommerce-config');
+
         $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
         $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');
         $this->mergeConfigFrom(__DIR__.'/../config/sendgrid.php', 'services');
         $this->mergeConfigFrom(__DIR__.'/../config/adminer.php', 'adminer');
+        $this->mergeConfigFrom(__DIR__.'/../config/mail.php', 'mail.from');
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
     }
