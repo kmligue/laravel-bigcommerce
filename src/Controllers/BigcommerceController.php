@@ -8,6 +8,8 @@ use Limonlabs\Bigcommerce\Models\StoreInfo;
 use Limonlabs\Bigcommerce\Models\Webhook;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Limonlabs\Bigcommerce\Mail\AppInstalled;
 
 class BigcommerceController
 {
@@ -125,12 +127,8 @@ class BigcommerceController
 
                     // Send email to the user
                     try {
-                        \Limonlabs\Bigcommerce\SendGrid\Mail::getInstance()
-                                    ->setFrom(config('mail.from.address'), config('mail.from.name'))
-                                    ->setSubject('App Installed')
-                                    ->addTo($data['user']['email'], $store_data['first_name'] . ' ' . $store_data['last_name'])
-                                    ->addContent('text/html', view('limonlabs/bigcommerce::emails.app-installed')->render())
-                                    ->send();
+                        Mail::to($store_data['email'], $store_data['first_name'] . ' ' . $store_data['last_name'])
+                            ->send(new AppInstalled($store_info));
                     } catch (\Throwable $th) {
                         //throw $th;
                     }

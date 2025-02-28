@@ -1,1 +1,0 @@
-<div>Thanks for installing our app.</div>
