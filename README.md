@@ -190,3 +190,19 @@ STRIPE_GOLD_PLAN_ID=price_1Qu24HDp8CuNIE4GbY3U4mCF
 ```
 STATICFORMS_ACCESS_KEY=b9c3f48b-3e4e-4d60-8295-cb7211501eec
 ```
+
+# Mail Settings
+```
+MAIL_FROM_ADDRESS=support@limonlabs.dev
+MAIL_FROM_NAME="[TEST] Limon Labs Support"
+MAIL_SUBJECT_PREFIX="[TEST]"
+ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
+```
+
+&bullet; **MAIL_FROM_ADDRESS** defaults to support@limonlabs.dev.
+
+&bullet; **MAIL_FROM_NAME** prefix [TEST] for development.
+
+&bullet; **MAIL_SUBJECT_PREFIX** put [TEST] if development. Set empty for production.
+
+&bullet; **ADMIN_MAIL_FROM_ADDRESS** default to dev@limonlabs.dev,support@limonlabs.dev.
