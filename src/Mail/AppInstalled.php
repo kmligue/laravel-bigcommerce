@@ -29,8 +29,15 @@ class AppInstalled extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = 'Welcome to ' . config('app.name') . '!';
+        $subjectPrefix = config('mail.from.subject_prefix');
+
+        if (!empty($subjectPrefix)) {
+            $subject = $subjectPrefix . ' ' . $subject;
+        }
+
         return new Envelope(
-            subject: 'Welcome to ' . config('app.name') . '!',
+            subject: $subject,
         );
     }
 

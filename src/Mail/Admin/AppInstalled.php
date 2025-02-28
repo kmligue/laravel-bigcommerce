@@ -29,8 +29,15 @@ class AppInstalled extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = 'New Site Install';
+        $subjectPrefix = config('mail.from.subject_prefix');
+        
+        if (!empty($subjectPrefix)) {
+            $subject = $subjectPrefix . ' ' . $subject;
+        }
+        
         return new Envelope(
-            subject: 'New Site Install',
+            subject: $subject,
         );
     }
 

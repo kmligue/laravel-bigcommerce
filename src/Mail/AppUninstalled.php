@@ -29,8 +29,15 @@ class AppUninstalled extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = 'Your ' . config('app.name') . ' subscription has been cancelled';
+        $subjectPrefix = config('mail.from.subject_prefix');
+
+        if (!empty($subjectPrefix)) {
+            $subject = $subjectPrefix . ' ' . $subject;
+        }
+
         return new Envelope(
-            subject: 'Your ' . config('app.name') . ' subscription has been cancelled',
+            subject: $subject,
         );
     }
 
