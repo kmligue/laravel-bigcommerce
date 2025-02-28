@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Limonlabs\Bigcommerce\Mail\AppInstalled;
+use Limonlabs\Bigcommerce\Mail\AppUninstalled;
 
 class BigcommerceController
 {
@@ -321,6 +322,20 @@ class BigcommerceController
                 $request->session()->put('owner_id', $verifiedSignedRequestData['owner']['id']);
                 $request->session()->put('owner_email', $verifiedSignedRequestData['owner']['email']);
                 $request->session()->put('store_hash', $verifiedSignedRequestData['context']);
+
+                $store_info = tenant_class()::where('store_hash', $verifiedSignedRequestData['context'])->first();
+
+                if ($store_info->subscription() && $store_info->subscription()->stripe_status == 'active') {
+                    $store_info->subscription('default')->cancelNow();
+                }
+
+                // Send uninstall email to the store
+                try {
+                    Mail::to($store_info->user_email, $store_info->first_name . ' ' . $store_info->last_name)
+                        ->send(new AppUninstalled($store_info));
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
             } else {
                 return redirect('error')->with('error', 'The signed request from BigCommerce could not be validated.');
             }

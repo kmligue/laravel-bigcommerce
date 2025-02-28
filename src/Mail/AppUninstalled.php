@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\StoreInfo;
 
-class AppInstalled extends Mailable
+class AppUninstalled extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -30,7 +30,7 @@ class AppInstalled extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to ' . config('app.name') . '!',
+            subject: 'Your ' . config('app.name') . ' subscription has been cancelled',
         );
     }
 
@@ -40,7 +40,7 @@ class AppInstalled extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'limonlabs/bigcommerce::mail.app-installed',
+            markdown: 'limonlabs/bigcommerce::mail.app-uninstalled',
         );
     }
 
