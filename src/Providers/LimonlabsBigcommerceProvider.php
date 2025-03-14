@@ -28,6 +28,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
     {
         // register middleware
         $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
+        $this->app['router']->aliasMiddleware('bigcommerce.store.expired', \Limonlabs\Bigcommerce\Middleware\ExpiredMiddleware::class);
 
         $this->app['router']->aliasMiddleware('adminer', \Illuminate\Cookie\Middleware\EncryptCookies::class);
         $this->app['router']->pushMiddlewareToGroup('adminer', \Illuminate\Session\Middleware\StartSession::class);

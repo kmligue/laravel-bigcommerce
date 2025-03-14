@@ -30,6 +30,12 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'index'])->name('billing');
     Route::get('stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'history']);
     Route::get('stores/{storeHash}/billing/{plan}', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'show']);
+
+    Route::get('stores/{storeHash}/expired', function() {
+        $storeHash = 'stores/' . request()->route('storeHash');
+
+        return view('limonlabs/bigcommerce::expired', compact('storeHash'));
+    });
 });
 
 Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\LimonAdminController::class, 'index']);
