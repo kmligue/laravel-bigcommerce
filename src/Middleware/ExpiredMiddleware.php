@@ -21,7 +21,7 @@ class ExpiredMiddleware
         $store = tenant();
         
         if (empty($store->plan) && $store->trial_ends_at && $store->trial_ends_at->isPast()) {
-            return redirect('/' . $store->store_hash . '/extensions/expired');
+            return redirect('/' . $store->store_hash . '/expired');
         }
 
         return $next($request);
