@@ -52,7 +52,7 @@
                                                 <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                             @else
                                                 <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
-                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
+                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan && $currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
                                                 </form>
                                             @endif
                                         </div>
