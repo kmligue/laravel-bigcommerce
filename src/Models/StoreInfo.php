@@ -30,11 +30,13 @@ class StoreInfo extends Authenticatable
         'country',
         'plan_level',
         'multi_storefront_enabled',
-        'settings'
+        'settings',
+        'trial_ends_at'
     ];
 
     protected $casts = [
-        'settings' => 'array'
+        'settings' => 'array',
+        'trial_ends_at' => 'datetime'
     ];
 
     public function webhooks() {
