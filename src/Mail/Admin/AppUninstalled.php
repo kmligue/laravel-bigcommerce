@@ -8,7 +8,6 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\StoreInfo;
 
 class AppUninstalled extends Mailable
 {
@@ -18,7 +17,7 @@ class AppUninstalled extends Mailable
      * Create a new message instance.
      */
     public function __construct(
-        public StoreInfo $storeInfo
+        public $storeInfo
     )
     {
         //
