@@ -29,7 +29,7 @@ class AppUninstalled extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = 'Site Uninstall';
+        $subject = 'Site Uninstall - ' . config('app.name') . ' - ' . $this->storeInfo->name;
         $subjectPrefix = config('mail.from.subject_prefix');
 
         if (!empty($subjectPrefix)) {

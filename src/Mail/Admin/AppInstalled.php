@@ -29,7 +29,7 @@ class AppInstalled extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = 'New Site Install';
+        $subject = 'New Site Install - ' . config('app.name') . ' - ' . $this->storeInfo->name;
         $subjectPrefix = config('mail.from.subject_prefix');
         
         if (!empty($subjectPrefix)) {
