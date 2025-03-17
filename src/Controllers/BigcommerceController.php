@@ -342,7 +342,6 @@ class BigcommerceController
                         // Rename all tenant tables
                         $tablePrefix = config('database.connections.mysql.prefix');
                         $table = $tablePrefix . '_' . str_replace('stores/', '', $store_info->store_hash);
-                        $dbname = config('database.connections.mysql.database');
                         
                         $tables = \Illuminate\Support\Facades\DB::select("SHOW TABLES LIKE '{$table}\_%'");
                         // convert to array
