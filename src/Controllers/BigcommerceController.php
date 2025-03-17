@@ -333,20 +333,40 @@ class BigcommerceController
 
                 $store_info = tenant_class()::where('store_hash', $verifiedSignedRequestData['context'])->first();
 
-                if ($store_info->subscription() && $store_info->subscription()->stripe_status == 'active') {
-                    $store_info->subscription('default')->cancelNow();
-                }
+                if ($store_info) {
+                    if ($store_info->plan && $store_info->subscription() && $store_info->subscription()->stripe_status == 'active') {
+                        $store_info->subscription('default')->cancelNow();
+                    }
+    
+                    try {
+                        // Softdelete store info
+                        $store_info->delete();
 
-                try {
-                    // Send email to the dev
-                    Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
-                            ->send(new AdminAppUninstalled($store_info));
+                        // Rename all tenant tables
+                        $tablePrefix = config('database.connections.mysql.prefix');
+                        $table = $tablePrefix . '_' . str_replace('stores/', '', $store_info->store_hash);
+                        $dbname = config('database.connections.mysql.database');
+                        
+                        $tables = \Illuminate\Support\Facades\DB::select("SHOW TABLES LIKE '{$table}\_%'");
+                        // convert to array
+                        $tables = json_decode(json_encode($tables), true);
 
-                    // Send uninstall email to the store
-                    Mail::to($store_info->user_email, $store_info->first_name . ' ' . $store_info->last_name)
-                        ->send(new AppUninstalled($store_info));
-                } catch (\Throwable $th) {
-                    //throw $th;
+                        foreach ($tables as $_table) {
+                            foreach ($_table as $table) {
+                                \Illuminate\Support\Facades\Schema::rename(str_replace($tablePrefix, '', $table), str_replace($tablePrefix, '', $table) . '-DEL-'. now()->timestamp);
+                            }
+                        }
+
+                        // Send email to the dev
+                        Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
+                                ->send(new AdminAppUninstalled($store_info));
+    
+                        // Send uninstall email to the store
+                        Mail::to($store_info->user_email, $store_info->first_name . ' ' . $store_info->last_name)
+                            ->send(new AppUninstalled($store_info));
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
                 }
             } else {
                 return redirect('error')->with('error', 'The signed request from BigCommerce could not be validated.');
