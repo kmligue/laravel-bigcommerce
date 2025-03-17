@@ -339,9 +339,6 @@ class BigcommerceController
                     }
     
                     try {
-                        // Softdelete store info
-                        $store_info->delete();
-
                         // Rename all tenant tables
                         $tablePrefix = config('database.connections.mysql.prefix');
                         $table = $tablePrefix . '_' . str_replace('stores/', '', $store_info->store_hash);
@@ -353,9 +350,16 @@ class BigcommerceController
 
                         foreach ($tables as $_table) {
                             foreach ($_table as $table) {
-                                \Illuminate\Support\Facades\Schema::rename(str_replace($tablePrefix, '', $table), str_replace($tablePrefix, '', $table) . '-DEL-'. now()->timestamp);
+                                // check if $table has '-DEL-' in it
+                                if (strpos($table, '-DEL-') === false) {
+                                    // rename table
+                                    \Illuminate\Support\Facades\Schema::rename(str_replace($tablePrefix, '', $table), str_replace($tablePrefix, '', $table) . '-DEL-'. now()->timestamp);
+                                }
                             }
                         }
+
+                        // Softdelete store info
+                        $store_info->delete();
 
                         // Send email to the dev
                         Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
