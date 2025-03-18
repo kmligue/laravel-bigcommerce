@@ -55,10 +55,11 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StoreInfo extends Authenticatable
 {
-    use HasFactory, Billable;
+    use HasFactory, Billable, SoftDeletes;
 
     protected $table = 'store_info';
 
