@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Config;
 
 class DeleteTenantTables extends Command
 {
-    protected $signature = 'delete:tables';
+    protected $signature = 'delete:old-tenant-tables';
 
     protected $description = 'Delete tenant tables that are over 30 days old';
 

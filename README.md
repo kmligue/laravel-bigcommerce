@@ -211,5 +211,5 @@ ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
 # Cron Job
 Delete tenant tables that are over 30 days old
 ```
-php artisan delete:tables
+php artisan delete:old-tenant-tables
 ```
