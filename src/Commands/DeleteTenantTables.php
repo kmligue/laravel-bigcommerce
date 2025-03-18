@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
 use Illuminate\Support\Facades\Config;
 
-class SoftDeleteTenantTables extends Command
+class DeleteTenantTables extends Command
 {
     protected $signature = 'delete:tables';
 

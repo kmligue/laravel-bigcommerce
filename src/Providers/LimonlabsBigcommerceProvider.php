@@ -38,6 +38,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Limonlabs\Bigcommerce\Commands\TenantMigration::class,
+                \Limonlabs\Bigcommerce\Commands\DeleteTenantTables::class,
             ]);
         }
 
