@@ -51,7 +51,6 @@
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Email</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Discount</th>
-                    <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Trial End Date</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Date</th>
                 </tr>
@@ -62,7 +61,7 @@
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 store-hash">
                             <div class="relative">
                                 <i class="fa-solid fa-circle-info info-icon"></i> 
-                                {{ $store->store_hash }}
+                                {{ str_replace('stores/', '', $store->store_hash) }}
                                 <div class="tooltip border p-3 absolute">
                                     <ul>
                                         <li>
@@ -99,17 +98,54 @@
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->first_name }} {{ $store->last_name }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 w-1/6">{{ $store->user_email }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
-                            @if ($store->plan)
-                                @if ($store->plan['plan_id'] == Config::get('plans.free.plan_id'))
-                                    Free
-                                @elseif ($store->plan['plan_id'] == Config::get('plans.bronze.plan_id'))
-                                    Bronze (${{ number_format(Config::get('plans.bronze.price'), 2) }}/month)
-                                @elseif ($store->plan['plan_id'] == Config::get('plans.silver.plan_id'))
-                                    Silver (${{ number_format(Config::get('plans.silver.price'), 2) }}/month)
-                                @elseif ($store->plan['plan_id'] == Config::get('plans.gold.plan_id'))
-                                    Gold (${{ number_format(Config::get('plans.gold.price'), 2) }}/month)
+                            <span class="plan-text">
+                                @if ($store->plan)
+                                    @if ($store->plan['plan_id'] == Config::get('plans.free.plan_id'))
+                                        Free
+                                    @elseif ($store->plan['plan_id'] == Config::get('plans.bronze.plan_id'))
+                                        Bronze (${{ number_format(Config::get('plans.bronze.price'), 2) }}/month)
+                                    @elseif ($store->plan['plan_id'] == Config::get('plans.silver.plan_id'))
+                                        Silver (${{ number_format(Config::get('plans.silver.price'), 2) }}/month)
+                                    @elseif ($store->plan['plan_id'] == Config::get('plans.gold.plan_id'))
+                                        Gold (${{ number_format(Config::get('plans.gold.price'), 2) }}/month)
+                                    @endif
+                                @else
+                                    @if ($store->onTrial())
+                                        Trial
+                                    @else
+                                        -
+                                    @endif
                                 @endif
-                            @endif
+                            </span>
+
+                            <div class="flex items-center gap-2 plan-edit" style="display: none;">
+                                @php
+                                    $plans = Config::get('plans');
+                                @endphp
+
+                                <select class="border plan" data-current-plan="{{ $store->plan && $store->plan['plan_id'] }}" data-store-hash="{{ $store->store_hash }}">
+                                    <option value="" data-plan=''>
+                                        @if ($store->onTrial()) 
+                                            Trial
+                                        @else
+                                            -
+                                        @endif
+                                    </option>
+                                    @foreach ($plans as $key => $plan)
+                                        <option value="{{ $key }}" {{ ($store->plan && $store->plan['plan_id'] == $plan['plan_id']) ? 'selected' : '' }} data-plan="{{ $plan['plan_id'] }}">
+                                            {{ ucfirst($key) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="plan-change border px-1 disabled:bg-[#eee]" disabled>Change</button>
+                                <button type="button" class="plan-cancel disabled:bg-[#eee]">
+                                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+                                </button>
+                            </div>
+
+                            <button type="button" class="plan-edit-btn" title="Edit">
+                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/></svg>
+                            </button>
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
                             @php
@@ -130,33 +166,21 @@
                             @endif
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
-                            <div class="flex items-center gap-4">
-                                @php
-                                    $plans = Config::get('plans');
-                                @endphp
+                            <span class="trial-end-text">
+                                {{ $store->trial_ends_at->format('F d, Y') }}
+                            </span>
 
-                                <select class="border plan" data-current-plan="{{ $store->plan && $store->plan['plan_id'] }}" data-store-hash="{{ $store->store_hash }}">
-                                    <option value="" data-plan=''>
-                                        @if ($store->onTrial()) 
-                                            Trial
-                                        @else
-                                            No plan selected
-                                        @endif
-                                    </option>
-                                    @foreach ($plans as $key => $plan)
-                                        <option value="{{ $key }}" {{ ($store->plan && $store->plan['plan_id'] == $plan['plan_id']) ? 'selected' : '' }} data-plan="{{ $plan['plan_id'] }}">
-                                            {{ ucfirst($key) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="plan-change border px-1 disabled:bg-[#eee]" disabled>Change</button>
-                            </div>
-                        </td>
-                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
-                            <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2 trial-end-edit" style="display: none;">
                                 <input type="date" class="border trial" value="{{ $store->trial_ends_at->format('Y-m-d') }}" data-store-hash="{{ $store->store_hash }}">
                                 <button type="button" class="trial-change border px-1">Change</button>
+                                <button type="button" class="trial-end-cancel disabled:bg-[#eee]">
+                                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+                                </button>
                             </div>
+
+                            <button type="button" class="trial-end-edit-btn" title="Edit">
+                                <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/></svg>
+                            </button>
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->created_at->format('F d, Y') }}</td>
                     </tr>
@@ -272,6 +296,38 @@
                     }
                 }
             });
+        });
+
+        $('.plan-edit-btn').on('click', function(e) {
+            e.preventDefault();
+
+            $(this).hide();
+            $(this).parent().find('.plan-text').hide();
+            $(this).parent().find('.plan-edit').show();
+        });
+
+        $('.plan-cancel').on('click', function(e) {
+            e.preventDefault();
+
+            $(this).parent().hide();
+            $(this).parent().parent().find('.plan-text').show();
+            $(this).parent().parent().find('.plan-edit-btn').show();
+        });
+
+        $('.trial-end-edit-btn').on('click', function(e) {
+            e.preventDefault();
+
+            $(this).hide();
+            $(this).parent().find('.trial-end-text').hide();
+            $(this).parent().find('.trial-end-edit').show();
+        });
+
+        $('.trial-end-cancel').on('click', function(e) {
+            e.preventDefault();
+
+            $(this).parent().hide();
+            $(this).parent().parent().find('.trial-end-text').show();
+            $(this).parent().parent().find('.trial-end-edit-btn').show();
         });
     });
 </script>
