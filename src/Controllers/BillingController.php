@@ -91,6 +91,23 @@ class BillingController
         }
     }
 
+    public function trialChange(Request $request, $storeHash) {
+        $storeHash = 'stores/' . $storeHash;
+        $store = tenant_class()::where('store_hash', $storeHash)->first();
+
+        if ($store) {
+            $date = $request->trial;
+            
+            $store->update([
+                'trial_ends_at' => $date
+            ]);
+        }
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
     public function history(Request $request, $storeHash) {
         $invoices = tenant()->invoices();
         $storeHash = 'stores/' . $storeHash;

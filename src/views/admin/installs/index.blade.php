@@ -52,6 +52,7 @@
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Discount</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Plan</th>
+                    <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Trial End Date</th>
                     <th class="border-b border-[#9a9da1] p-4 pl-8 pt-0 pb-3 text-left">Date</th>
                 </tr>
             </thead>
@@ -151,6 +152,12 @@
                                 <button type="button" class="plan-change border px-1 disabled:bg-[#eee]" disabled>Change</button>
                             </div>
                         </td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
+                            <div class="flex items-center gap-4">
+                                <input type="date" class="border trial" value="{{ $store->trial_ends_at->format('Y-m-d') }}" data-store-hash="{{ $store->store_hash }}">
+                                <button type="button" class="trial-change border px-1">Change</button>
+                            </div>
+                        </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->created_at->format('F d, Y') }}</td>
                     </tr>
                 @endforeach
@@ -212,6 +219,48 @@
                                 location.reload();
                             }, 1500);
                         }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+
+                        $(self).html('Change');
+                    }
+                }
+            });
+        });
+
+        $('.trial-change').on('click', function(e) {
+            e.preventDefault();
+
+            // Add loading spinner on button
+            $(this).html('Change <i class="fas fa-spinner fa-spin"></i>');
+
+            var storeHash = $(this).prev().data('store-hash');
+            var trial = $(this).prev().val();
+            var self = this;
+
+            $.ajax({
+                url: '/api/' + storeHash + '/billing/trial/change',
+                type: 'POST',
+                data: {
+                    trial: trial
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
                     } else {
                         Swal.fire({
                             icon: 'error',
