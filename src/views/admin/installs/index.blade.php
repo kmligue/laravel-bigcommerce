@@ -134,7 +134,14 @@
                                     $plans = Config::get('plans');
                                 @endphp
 
-                                <select class="border plan" data-current-plan="{{ $store->plan['plan_id'] }}" data-store-hash="{{ $store->store_hash }}">
+                                <select class="border plan" data-current-plan="{{ $store->plan && $store->plan['plan_id'] }}" data-store-hash="{{ $store->store_hash }}">
+                                    <option value="" data-plan=''>
+                                        @if ($store->onTrial()) 
+                                            Trial
+                                        @else
+                                            No plan selected
+                                        @endif
+                                    </option>
                                     @foreach ($plans as $key => $plan)
                                         <option value="{{ $key }}" {{ ($store->plan && $store->plan['plan_id'] == $plan['plan_id']) ? 'selected' : '' }} data-plan="{{ $plan['plan_id'] }}">
                                             {{ ucfirst($key) }}
@@ -159,7 +166,7 @@
         $('select.plan').on('change', function(e) {
             var currentPlan = $(this).data('current-plan');
             var selectedPlan = $(this).find(':selected').data('plan');
-
+            
             if (currentPlan != selectedPlan) {
                 $(this).next().prop('disabled', false);
             } else {

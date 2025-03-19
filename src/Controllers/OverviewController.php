@@ -9,7 +9,7 @@ class OverviewController
 {
     public function index(Request $request, $storeHash) {
         $storeHash = 'stores/' . $storeHash;
-
+        
         return view('limonlabs/bigcommerce::overview.index', compact('storeHash'));
     }
 }
