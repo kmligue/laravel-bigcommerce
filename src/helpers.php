@@ -54,3 +54,12 @@ if (!function_exists('is_maintenance')) {
         return config('tenant.maintenance');
     }
 }
+
+if (!function_exists('is_maintenance_allowed')) {
+    function is_maintenance_allowed($storeHash) {
+        $allowed_stores = config('tenant.maintenance_allowed_stores');
+        $allowed_stores = array_map('trim', explode(',', $allowed_stores));
+
+        return in_array(str_replace('stores/', '', $storeHash), $allowed_stores);
+    }
+}
