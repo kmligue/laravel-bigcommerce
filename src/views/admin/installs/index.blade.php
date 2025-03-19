@@ -65,6 +65,9 @@
                                 <div class="tooltip border p-3 absolute">
                                     <ul>
                                         <li>
+                                            name: {{ $store->name }}
+                                        </li>
+                                        <li>
                                             user_id: {{ $store->user_id }}
                                         </li>
                                         <li>
