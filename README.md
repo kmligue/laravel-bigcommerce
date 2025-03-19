@@ -213,3 +213,8 @@ Delete tenant tables that are over 30 days old
 ```
 php artisan delete:old-tenant-tables
 ```
+
+# Publish images
+```
+php artisan vendor:publish --tag=limonlabs-bigcommerce-images
+```
