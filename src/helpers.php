@@ -48,3 +48,9 @@ if (!function_exists('get_load_redirect')) {
         return $redirect;
     }
 }
+
+if (!function_exists('is_maintenance')) {
+    function is_maintenance() {
+        return config('tenant.maintenance');
+    }
+}

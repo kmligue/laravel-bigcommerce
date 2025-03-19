@@ -18,6 +18,11 @@ class BigcommerceStoreAuth
      */
     public function handle(Request $request, Closure $next)
     {
+        // Check if in maintenance mode
+        if (is_maintenance()) {
+            return redirect('/maintenance');
+        }
+
         $storeHash = 'stores/' . $request->route()->parameter('storeHash');
         
         $store = tenant_class()::where('store_hash', $storeHash)->first();

@@ -1,5 +1,6 @@
 <?php
 
+use AWS\CRT\HTTP\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/error', function () {
@@ -38,4 +39,5 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     });
 });
 
-Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\LimonAdminController::class, 'index']);
+Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\Admin\InstallsController::class, 'index']);
+Route::get('maintenance', [\Limonlabs\Bigcommerce\Controllers\Admin\MaintenanceController::class, 'index']);
