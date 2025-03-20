@@ -25,7 +25,7 @@
             border-bottom: none;
         }
 
-        .store-hash:hover .tooltip {
+        .info-icon:hover + .tooltip {
             display: block;
         }
 
