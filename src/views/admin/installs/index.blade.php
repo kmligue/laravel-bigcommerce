@@ -60,8 +60,7 @@
                     <tr>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500 store-hash">
                             <div class="relative">
-                                <i class="fa-solid fa-circle-info info-icon"></i> 
-                                {{ str_replace('stores/', '', $store->store_hash) }}
+                                <i class="fa-solid fa-circle-info info-icon"></i>
                                 <div class="tooltip border p-3 absolute">
                                     <ul>
                                         <li>
@@ -96,6 +95,7 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <a href="{{ get_load_redirect($store->store_hash) }}" class="hover:underline">{{ str_replace('stores/', '', $store->store_hash) }}</a>
                             </div>
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->first_name }} {{ $store->last_name }}</td>
