@@ -63,3 +63,34 @@ if (!function_exists('is_maintenance_allowed')) {
         return in_array(str_replace('stores/', '', $storeHash), $allowed_stores);
     }
 }
+
+if (!function_exists('get_stores_in_trial_period')) {
+    function get_stores_in_trial_period() {
+        return tenant_class()::where('trial_ends_at', '>=', now())->get();
+    }
+}
+
+if (!function_exists('get_stores_in_expired_trial')) {
+    function get_stores_in_expired_trial($days = 1) {
+        return tenant_class()::where('trial_ends_at', '<=', now()->subDays($days))->get();
+    }
+}
+
+if (!function_exists('get_stores_uninstalled_app')) {
+    function get_stores_uninstalled_app($days = 1) {
+        return tenant_class()::where('deleted_at', '<=', now()->subDays($days))
+                            ->onlyTrashed()
+                            ->orderBy('deleted_at', 'desc')
+                            ->get();
+    }
+}
+
+if (!function_exists('get_subscribed_stores')) {
+    function get_subscribed_stores() {
+        return tenant_class()::query()
+                            ->whereHas('subscriptions', function($query) {
+                                $query->active();
+                            })
+                            ->get();
+    }
+}
