@@ -38,7 +38,7 @@
 @endsection
 
 @section('content')
-    @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Limon Admin'])
+    @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Limon Admin / ' . config('app.name') . ' / Installs'])
 
     <div class="bg-white shadow-md p-5 mt-8">
         @include('limonlabs/bigcommerce::layouts.flash')
