@@ -39,5 +39,13 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     });
 });
 
-Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\Admin\InstallsController::class, 'index']);
+Route::middleware(['limonadmin.guest'])->group(function() {
+    Route::get('limonadmin', [\Limonlabs\Bigcommerce\Controllers\Admin\LimonAdminController::class, 'index']);
+    Route::post('limonadmin', [\Limonlabs\Bigcommerce\Controllers\Admin\LimonAdminController::class, 'store']);
+});
+
+Route::middleware(['limonadmin.auth'])->group(function() {
+    Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\Admin\InstallsController::class, 'index']);
+});
+
 Route::get('maintenance', [\Limonlabs\Bigcommerce\Controllers\Admin\MaintenanceController::class, 'index']);

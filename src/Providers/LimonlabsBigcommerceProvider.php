@@ -29,6 +29,8 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         // register middleware
         $this->app['router']->aliasMiddleware('bigcommerce.store.auth', \Limonlabs\Bigcommerce\Middleware\BigcommerceStoreAuth::class);
         $this->app['router']->aliasMiddleware('bigcommerce.store.expired', \Limonlabs\Bigcommerce\Middleware\ExpiredMiddleware::class);
+        $this->app['router']->aliasMiddleware('limonadmin.auth', \Limonlabs\Bigcommerce\Middleware\LimonAdminAuth::class);
+        $this->app['router']->aliasMiddleware('limonadmin.guest', \Limonlabs\Bigcommerce\Middleware\LimonAdminGuest::class);
 
         $this->app['router']->aliasMiddleware('adminer', \Illuminate\Cookie\Middleware\EncryptCookies::class);
         $this->app['router']->pushMiddlewareToGroup('adminer', \Illuminate\Session\Middleware\StartSession::class);
@@ -48,6 +50,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
 
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/console.php');
 
         // Views
         $this->loadViewsFrom(__DIR__.'/../views', 'limonlabs/bigcommerce');
@@ -62,6 +65,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 __DIR__.'/../config/scripts.php' => config_path('scripts.php'),
                 __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
                 __DIR__.'/../config/tenant.php' => config_path('tenant.php'),
+                __DIR__.'/../config/limonadmin.php' => config_path('limonadmin.php'),
             ],
         'limonlabs-bigcommerce-config');
 
@@ -76,6 +80,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/adminer.php', 'adminer');
         $this->mergeConfigFrom(__DIR__.'/../config/mail.php', 'mail.from');
         $this->mergeConfigFrom(__DIR__.'/../config/tenant.php', 'tenant');
+        $this->mergeConfigFrom(__DIR__.'/../config/limonadmin.php', 'limonadmin');
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
     }
