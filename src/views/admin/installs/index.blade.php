@@ -128,15 +128,18 @@
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
                             <span class="plan-text">
                                 @if ($store->plan)
-                                    @if ($store->plan['plan_id'] == Config::get('plans.free.plan_id'))
-                                        Free
-                                    @elseif ($store->plan['plan_id'] == Config::get('plans.bronze.plan_id'))
-                                        Bronze (${{ number_format(Config::get('plans.bronze.price'), 2) }}/month)
-                                    @elseif ($store->plan['plan_id'] == Config::get('plans.silver.plan_id'))
-                                        Silver (${{ number_format(Config::get('plans.silver.price'), 2) }}/month)
-                                    @elseif ($store->plan['plan_id'] == Config::get('plans.gold.plan_id'))
-                                        Gold (${{ number_format(Config::get('plans.gold.price'), 2) }}/month)
-                                    @endif
+                                    @php 
+                                        $plans = Config::get('plans');
+                                    @endphp
+
+                                    @foreach ($plans as $key => $plan) 
+                                        @if ($store->plan['plan_id'] == $plan['plan_id'])
+                                            {{ ucfirst($key) }}
+                                            @if ($plan['price'] > 0)
+                                                (${{ number_format($plan['price'], 2) }}/month)
+                                            @endif
+                                        @endif
+                                    @endforeach
                                 @else
                                     -
                                 @endif
