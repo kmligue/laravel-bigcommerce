@@ -25,7 +25,7 @@ class HelpController
 
         $storeInfo = tenant();
         
-        Mail::to(config('mail.from.address'))
+        Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
             ->send(new Help($storeInfo, $data));
 
         return redirect()->back()->with('success', 'Your message has been sent successfully.');
