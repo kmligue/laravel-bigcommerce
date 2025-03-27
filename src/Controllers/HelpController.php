@@ -3,7 +3,8 @@
 namespace Limonlabs\Bigcommerce\Controllers;
 
 use Illuminate\Http\Request;
-use Limonlabs\Bigcommerce\Models\StoreInfo;
+use Limonlabs\Bigcommerce\Mail\Admin\Help;
+use Illuminate\Support\Facades\Mail;
 
 class HelpController
 {
@@ -11,5 +12,22 @@ class HelpController
         $storeHash = 'stores/' . $storeHash;
 
         return view('limonlabs/bigcommerce::help.index', compact('storeHash'));
+    }
+
+    public function store(Request $request, $storeHash) {
+        $storeHash = 'stores/' . $storeHash;
+
+        $data = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'message' => 'required',
+        ]);
+
+        $storeInfo = tenant();
+        
+        Mail::to(config('mail.from.address'))
+            ->send(new Help($storeInfo, $data));
+
+        return redirect()->back()->with('success', 'Your message has been sent successfully.');
     }
 }

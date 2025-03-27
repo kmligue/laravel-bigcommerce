@@ -27,6 +27,7 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
 
     Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
+    Route::post('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'store']);
 
     Route::get('stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'index'])->name('billing');
     Route::get('stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'history']);
@@ -46,6 +47,9 @@ Route::middleware(['limonadmin.guest'])->group(function() {
 
 Route::middleware(['limonadmin.auth'])->group(function() {
     Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\Admin\InstallsController::class, 'index']);
+
+    Route::get('limonadmin/unified-billing', [\Limonlabs\Bigcommerce\Controllers\Admin\UnifiedBillingController::class, 'index']);
+    Route::post('limonadmin/unified-billing/create', [\Limonlabs\Bigcommerce\Controllers\Admin\UnifiedBillingController::class, 'store']);
 });
 
 Route::get('maintenance', [\Limonlabs\Bigcommerce\Controllers\Admin\MaintenanceController::class, 'index']);

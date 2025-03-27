@@ -13,7 +13,9 @@
             </div>
         @endif
 
-        <form action="https://api.staticforms.xyz/submit" method="post">
+        <form action="{{ url('/' . $storeHash . '/help') }}" method="post">
+            @csrf
+
             <div class="mb-5">
                 <label for="name" class="block text-sm">Your Name</label>
                 <input type="text" class="w-full border rounded-md p-2 mt-1" name="name" placeholder="Your Name">
@@ -29,13 +31,8 @@
                 <textarea name="message" class="w-full border rounded-md p-2 mt-1" rows="5"></textarea>
             </div>
 
-            <input type="text" name="honeypot" style="display:none">
-            <input type="hidden" name="accessKey" value="{{ config('tenant.staticforms_access_key') }}">
-            <input type="hidden" name="subject" value="Help from - {{ config('app.name') }}" />
-            <input type="hidden" name="redirectTo" value="{{ url('/' . $storeHash . '/help?success=1') }}">
-
             <div class="mb-5 text-right">
-                <input type="submit" class="bg-[#4b71fc] text-white px-3 py-1 rounded" value="Submit" />
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Send</button>
             </div>
         </form>
     </div>
