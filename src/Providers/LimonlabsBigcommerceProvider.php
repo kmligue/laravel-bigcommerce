@@ -5,6 +5,11 @@ namespace Limonlabs\Bigcommerce\Providers;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
+use GuzzleHttp\Client;
+use Limonlabs\Bigcommerce\Mail\Transports\SendgridHttp;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
@@ -81,7 +86,17 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/mail.php', 'mail.from');
         $this->mergeConfigFrom(__DIR__.'/../config/tenant.php', 'tenant');
         $this->mergeConfigFrom(__DIR__.'/../config/limonadmin.php', 'limonadmin');
+        $this->mergeConfigFrom(__DIR__.'/../config/mail-mailers.php', 'mail.mailers');
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
+
+        Mail::extend('sendgrid-http', function ($app) {
+            return new SendgridHttp(
+                new Client(),
+                config('mail.mailers.sendgrid-http.api_url'),
+                config('mail.mailers.sendgrid-http.api_key'),
+                app(LoggerInterface::class)
+            );
+        });
     }
 }
