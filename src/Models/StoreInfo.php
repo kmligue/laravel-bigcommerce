@@ -31,12 +31,14 @@ class StoreInfo extends Authenticatable
         'country',
         'plan_level',
         'multi_storefront_enabled',
+        'internal_settings',
         'settings',
         'trial_ends_at'
     ];
 
     protected $casts = [
         'settings' => 'array',
+        'internal_settings' => 'array',
         'trial_ends_at' => 'datetime'
     ];
 

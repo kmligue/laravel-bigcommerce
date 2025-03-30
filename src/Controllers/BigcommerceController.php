@@ -166,7 +166,7 @@ class BigcommerceController
                 abort(404);
             }
 
-            return redirect(get_install_redirect($storeHash));
+            return redirect('/' . $storeHash . '/welcome');
         } catch (\RequestException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorMessage = "An error occurred.";
@@ -245,7 +245,11 @@ class BigcommerceController
             }
 
             if ($url == '/') {
-                return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+                if ($store_info->internal_settings && isset($store_info->internal_settings['welcome']) && $store_info->internal_settings['welcome'] == 1) {
+                    return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+                } else {
+                    return redirect('/' . $storeHash . '/welcome');
+                }
             } else {
                 return redirect($url);
             }
