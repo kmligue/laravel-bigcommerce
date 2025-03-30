@@ -46,8 +46,9 @@ by default this is set to "database". we will set it to "file" so that we will n
 ```
 <?php
 
-namespace Limonlabs\Bigcommerce\Models;
+namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Cashier\Billable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -67,13 +68,25 @@ class StoreInfo extends Authenticatable
         'store_hash',
         'access_token',
         'user_id',
+        'name',
+        'first_name',
+        'last_name',
         'user_email',
         'timezone',
-        'settings'
+        'secure_url',
+        'status',
+        'country',
+        'plan_level',
+        'multi_storefront_enabled',
+        'internal_settings',
+        'settings',
+        'trial_ends_at',
     ];
 
     protected $casts = [
-        'settings' => 'array'
+        'settings' => 'array',
+        'internal_settings' => 'array',
+        'trial_ends_at' => 'datetime',
     ];
 
     public function webhooks() {
@@ -85,7 +98,7 @@ class StoreInfo extends Authenticatable
         $_plan = [];
 
         foreach ($plans as $key => $plan) {
-            if (tenant()->subscribedToPrice($plan['plan_id'])) {
+            if ($this->subscribedToPrice($plan['plan_id'])) {
                 $_plan = $plan;
 
                 break;
@@ -95,7 +108,7 @@ class StoreInfo extends Authenticatable
         if (empty($_plan) && isset($plans['free'])) {
             $_plan = $plans['free'];
         }
-
+        
         return $_plan;
     }
 
@@ -119,7 +132,35 @@ class StoreInfo extends Authenticatable
 
     protected static function booted()
     {
+        static::creating(function ($storeInfo) {
+            $storeInfo->trial_ends_at = now()->addDays(14);
+        });
+
         static::created(function ($storeInfo) {
+            Http::withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'X-Auth-Token' => $storeInfo->access_token
+            ])->post('https://api.bigcommerce.com/'. $storeInfo->store_hash .'/graphql', [
+                'query' => 'mutation AppExtension($input: CreateAppExtensionInput!) {  appExtension {    createAppExtension(input: $input) {      appExtension {        id        context        label {          defaultValue          locales {            value            localeCode          }        }        model        url      }    }  }}',
+                'variables' => [
+                    'input' => [
+                        'context' => 'PANEL',
+                        'model' => 'CUSTOMERS',
+                        'url' => '/'. $storeInfo->store_hash .'/customers/${id}/notes',
+                        'label' => [
+                            'defaultValue' => 'Customer Notes',
+                            'locales' => [
+                                [
+                                    'value' => 'Customer Notes',
+                                    'localeCode' => 'en-US'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
             $oldPrefix = Config::get('database.connections.tenant.prefix');
             $prefix = $oldPrefix;
 
@@ -137,6 +178,7 @@ class StoreInfo extends Authenticatable
         });
     }
 }
+
 
 ```
 You can override this one in config/tenant.php
