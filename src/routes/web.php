@@ -8,9 +8,9 @@ Route::get('/error', function () {
 });
 
 Route::group(['prefix' => 'auth'], function () {
-    Route::get('install', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'install']);
+    Route::get('install', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'install'])->middleware('welcome.auth');
 
-    Route::get('load', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'load']);
+    Route::get('load', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'load'])->middleware('welcome.auth');
 
     Route::get('uninstall', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'uninstall']);
 
@@ -23,10 +23,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::any('/bc-api/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'proxyBigCommerceAPIRequest'])
     ->where('endpoint', 'v2\/.*|v3\/.*');
 
-Route::middleware(['bigcommerce.store.auth'])->group(function() {
-    Route::get('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'index']);
-    Route::post('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'store']);
-
+Route::middleware(['bigcommerce.store.auth', 'welcome.auth'])->group(function() {
     Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
 
     Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
@@ -41,6 +38,11 @@ Route::middleware(['bigcommerce.store.auth'])->group(function() {
 
         return view('limonlabs/bigcommerce::expired', compact('storeHash'));
     });
+});
+
+Route::middleware(['bigcommerce.store.auth'])->group(function() {
+    Route::get('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'index']);
+    Route::post('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'store']);
 });
 
 Route::middleware(['limonadmin.guest'])->group(function() {

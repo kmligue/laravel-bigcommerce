@@ -15,13 +15,13 @@ class WelcomeController
     public function store(Request $request, $storeHash) {
         $storeHash = 'stores/' . $storeHash;
         $tenant = tenant();
-
+        
         $tenant->update([
             'internal_settings' => [
                 'welcome' => 1
             ]
         ]);
         
-        return redirect(get_install_redirect($storeHash));
+        return redirect(get_load_redirect($storeHash));
     }
 }
