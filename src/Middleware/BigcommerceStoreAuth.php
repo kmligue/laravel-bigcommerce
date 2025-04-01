@@ -33,6 +33,13 @@ class BigcommerceStoreAuth
             abort(404);
         }
 
+        // if store did not complete the welcome process, redirect to the welcome page
+        if ($store->internal_settings && isset($store->internal_settings['welcome']) && $store->internal_settings['welcome'] == 1) {
+            return $next($request);
+        } else {
+            return redirect('/' . $store->store_hash . '/welcome');
+        }
+
         // set the store in the request
         $request->merge(['tenant' => $store]);
         
