@@ -81,7 +81,8 @@ class BillingController
 
             $checkout = tenant()->newSubscription('default', $priceId)->checkout([
                 'cancel_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . config('bigcommerce.bc_app_id') . '?action=upgrade&success=false',
-                'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . config('bigcommerce.bc_app_id') . '?action=upgrade&success=true'
+                'success_url' => 'https://store-'. $storeHash .'.mybigcommerce.com/manage/app/' . config('bigcommerce.bc_app_id') . '?action=upgrade&success=true',
+                'allow_promotion_codes' => true
             ]);
 
             return response()->json([
