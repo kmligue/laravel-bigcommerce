@@ -361,6 +361,7 @@ ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
 Delete tenant tables that are over 30 days old
 ```
 php artisan delete:old-tenant-tables
+php artisan schedule:run >> /dev/null 2>&1
 ```
 
 # Publish images

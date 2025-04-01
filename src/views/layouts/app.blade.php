@@ -101,7 +101,6 @@
                                 <div style="width: {{ $percentComplete }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center {{ $daysLeft <= 3 ? 'bg-amber-500' : 'bg-blue-500' }}"></div>
                             </div>
                         </div>
-                        <p class="text-xs text-{{ $daysLeft <= 3 ? 'amber' : 'blue' }}-700 mt-1">After your trial, you'll be on the {{ $planName }} plan.</p>
                     </div>
                 @endif
                 
