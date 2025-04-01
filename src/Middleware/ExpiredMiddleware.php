@@ -19,8 +19,9 @@ class ExpiredMiddleware
     public function handle(Request $request, Closure $next)
     {
         $store = tenant();
+        $planStatus = $store->getPlanStatus();
 
-        if ($store->getPlanStatus()['is_on_trial'] && $store->getPlanStatus()['trial_ends_at']->isPast()) {
+        if (!$planStatus['is_on_trial'] && !$planStatus['is_subscribed']) {
             return redirect('/' . $store->store_hash . '/expired');
         }
 
