@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
 use Illuminate\Support\Facades\Config;
 
-class BigcommerceStoreAuth
+class WelcomeAuth
 {
     /**
      * Handle an incoming request.
@@ -20,13 +20,6 @@ class BigcommerceStoreAuth
     {
         $storeHash = 'stores/' . $request->route()->parameter('storeHash');
 
-        // Check if in maintenance mode
-        if (is_maintenance()) {
-            if (!is_maintenance_allowed($storeHash)) {
-                return redirect('/maintenance');
-            }
-        }
-        
         $store = tenant_class()::where('store_hash', $storeHash)->first();
 
         if (!$store) {
@@ -35,17 +28,11 @@ class BigcommerceStoreAuth
 
         // set the store in the request
         $request->merge(['tenant' => $store]);
-        
-        $prefix = Config::get('database.connections.tenant.prefix');
 
-        if (!empty($prefix)) {
-            $prefix = $prefix . '_' . str_replace('stores/', '', $storeHash) . '_';
+        if ($store->internal_settings && isset($store->internal_settings['welcome']) && $store->internal_settings['welcome'] == 1) {
+            return $next($request);
         } else {
-            $prefix = str_replace('stores/', '', $storeHash) . '_';
+            return redirect('/' . $store->store_hash . '/welcome');
         }
-
-        \Illuminate\Support\Facades\Config::set('database.connections.tenant.prefix', $prefix);
-
-        return $next($request);
     }
 }
