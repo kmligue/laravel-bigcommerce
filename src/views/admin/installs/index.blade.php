@@ -177,9 +177,10 @@
                         </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $store->created_at->format('F d, Y') }}</td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
-                            @if ($store->onTrial())
+                            <!-- Only show trial end date if the store is on trial or not subscribed -->
+                            @if ($store->getPlanStatus()['is_on_trial'] || !$store->getPlanStatus()['is_subscribed'])
                                 <span class="trial-end-text">
-                                    {{ $store->trial_ends_at->format('F d, Y') }}
+                                    {{ $store->trial_ends_at ? $store->trial_ends_at->format('F d, Y') : 'N/A' }}
                                 </span>
 
                                 <div class="flex items-center gap-2 trial-end-edit" style="display: none;">
