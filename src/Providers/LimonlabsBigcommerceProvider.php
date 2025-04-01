@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Mail\Transports\SendgridHttp;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Illuminate\Console\Scheduling\Schedule;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
@@ -22,6 +22,9 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
     {
         // register the helper function
         require_once __DIR__.'/../helpers.php';
+
+        // Register your schedule service provider
+        $this->app->register(ScheduleServiceProvider::class);
     }
 
     /**
@@ -47,6 +50,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             $this->commands([
                 \Limonlabs\Bigcommerce\Commands\TenantMigration::class,
                 \Limonlabs\Bigcommerce\Commands\DeleteOldTenantTables::class,
+                \Limonlabs\Bigcommerce\Commands\HandleExpiredTrials::class,
             ]);
         }
 

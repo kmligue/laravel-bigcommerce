@@ -46,9 +46,8 @@ by default this is set to "database". we will set it to "file" so that we will n
 ```
 <?php
 
-namespace App\Models;
+namespace Limonlabs\Bigcommerce\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Cashier\Billable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -81,12 +80,14 @@ class StoreInfo extends Authenticatable
         'internal_settings',
         'settings',
         'trial_ends_at',
+        'has_advanced_during_trial',
+        'post_trial_plan'
     ];
 
     protected $casts = [
         'settings' => 'array',
         'internal_settings' => 'array',
-        'trial_ends_at' => 'datetime',
+        'trial_ends_at' => 'datetime'
     ];
 
     public function webhooks() {
@@ -108,7 +109,7 @@ class StoreInfo extends Authenticatable
         if (empty($_plan) && isset($plans['free'])) {
             $_plan = $plans['free'];
         }
-        
+
         return $_plan;
     }
 
@@ -130,37 +131,145 @@ class StoreInfo extends Authenticatable
         return [];
     }
 
+    /**
+     * Get the user's current plan status
+     *
+     * @return array Contains plan information and trial status
+     */
+    public function getPlanStatus()
+    {
+        $result = [
+            'is_subscribed' => false,
+            'is_on_trial' => false,
+            'current_plan' => null,
+            'trial_ends_at' => null,
+            'plan_details' => null,
+            'has_advanced_during_trial' => $this->has_advanced_during_trial ?? false,
+            'post_trial_plan' => $this->post_trial_plan ?? null,
+        ];
+
+        // Check if user is on trial
+        if ($this->onTrial()) {
+            $result['is_on_trial'] = true;
+            $result['trial_ends_at'] = $this->trial_ends_at;
+            
+            // If user has advanced access during trial, set their current plan
+            // to the highest plan or a specific trial plan
+            if ($this->has_advanced_during_trial ?? false) {
+                $plans = config('plans');
+                // Find the highest plan by sorting
+                uasort($plans, function($a, $b) {
+                    return ($b['price'] ?? 0) <=> ($a['price'] ?? 0);
+                });
+                
+                // Get the highest plan key (first after sorting)
+                $highestPlanKey = array_key_first($plans);
+                $result['current_plan'] = $highestPlanKey; // Typically 'gold' based on your config
+                $result['plan_details'] = $plans[$highestPlanKey];
+            }
+        } 
+        // Check if user has an active subscription
+        elseif ($this->subscribed('default')) {
+            $result['is_subscribed'] = true;
+            
+            $subscription = $this->subscription('default');
+            $stripePriceId = $subscription->stripe_price;
+            
+            // Match the stripe_price to a plan in the config
+            $plans = config('plans');
+            foreach ($plans as $planKey => $planDetails) {
+                if (isset($planDetails['plan_id']) && $planDetails['plan_id'] === $stripePriceId) {
+                    $result['current_plan'] = $planKey;
+                    $result['plan_details'] = $planDetails;
+                    break;
+                }
+            }
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Check if user has access to a specific plan's features
+     *
+     * @param string $planKey The plan key to check access for (e.g., 'bronze', 'silver', 'gold')
+     * @return bool Whether user has access to the specified plan's features
+     */
+    public function hasPlanAccess($planKey)
+    {
+        $status = $this->getPlanStatus();
+        
+        // If not subscribed and not on trial, no access
+        if (!$status['is_subscribed'] && !$status['is_on_trial']) {
+            return false;
+        }
+        
+        $plans = config('plans');
+        
+        // If the requested plan doesn't exist in our config, deny access
+        if (!isset($plans[$planKey])) {
+            return false;
+        }
+        
+        // Get the requested plan's price/level
+        $requestedPlanPrice = $plans[$planKey]['price'] ?? PHP_INT_MAX;
+        
+        // If user is on trial with advanced access
+        if ($status['is_on_trial'] && $status['has_advanced_during_trial']) {
+            // During trial with advanced access, give access to all plans
+            return true;
+        }
+        
+        // If user is subscribed to a plan
+        if ($status['is_subscribed'] && isset($status['current_plan'])) {
+            $currentPlanPrice = $plans[$status['current_plan']]['price'] ?? 0;
+            
+            // User has access if their plan price is >= the requested plan price
+            return $currentPlanPrice >= $requestedPlanPrice;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get all features the user has access to
+     *
+     * @return array Array of feature strings the user has access to
+     */
+    public function getAccessibleFeatures()
+    {
+        $status = $this->getPlanStatus();
+        $allFeatures = [];
+        $plans = config('plans');
+        
+        // If on trial with advanced access, merge all features
+        if ($status['is_on_trial'] && $status['has_advanced_during_trial']) {
+            foreach ($plans as $plan) {
+                if (isset($plan['features']) && is_array($plan['features'])) {
+                    $allFeatures = array_merge($allFeatures, $plan['features']);
+                }
+            }
+        } 
+        // If subscribed, get features of current plan and lower tiers
+        elseif ($status['is_subscribed'] && isset($status['current_plan'])) {
+            $currentPlanPrice = $plans[$status['current_plan']]['price'] ?? 0;
+            
+            foreach ($plans as $plan) {
+                if (isset($plan['price']) && $plan['price'] <= $currentPlanPrice) {
+                    if (isset($plan['features']) && is_array($plan['features'])) {
+                        $allFeatures = array_merge($allFeatures, $plan['features']);
+                    }
+                }
+            }
+        }
+        
+        // Remove duplicate features
+        return array_unique($allFeatures);
+    }
+
     protected static function booted()
     {
-        static::creating(function ($storeInfo) {
-            $storeInfo->trial_ends_at = now()->addDays(14);
-        });
-
         static::created(function ($storeInfo) {
-            Http::withHeaders([
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'X-Auth-Token' => $storeInfo->access_token
-            ])->post('https://api.bigcommerce.com/'. $storeInfo->store_hash .'/graphql', [
-                'query' => 'mutation AppExtension($input: CreateAppExtensionInput!) {  appExtension {    createAppExtension(input: $input) {      appExtension {        id        context        label {          defaultValue          locales {            value            localeCode          }        }        model        url      }    }  }}',
-                'variables' => [
-                    'input' => [
-                        'context' => 'PANEL',
-                        'model' => 'CUSTOMERS',
-                        'url' => '/'. $storeInfo->store_hash .'/customers/${id}/notes',
-                        'label' => [
-                            'defaultValue' => 'Customer Notes',
-                            'locales' => [
-                                [
-                                    'value' => 'Customer Notes',
-                                    'localeCode' => 'en-US'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]);
-
             $oldPrefix = Config::get('database.connections.tenant.prefix');
             $prefix = $oldPrefix;
 
@@ -178,8 +287,6 @@ class StoreInfo extends Authenticatable
         });
     }
 }
-
-
 ```
 You can override this one in config/tenant.php
 ```

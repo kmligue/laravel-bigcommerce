@@ -24,6 +24,15 @@
 </head>
 <body class="bg-[#f6f7f9]">
     <div class="p-10 mx-auto" style="max-width: 1300px;">
+        <!-- Display upgrade information if on trial -->
+        @if($user->getPlanStatus()['is_on_trial'])
+            <div class="trial-notice">
+                Your trial ends on {{ tenant_class()::getPlanStatus()['trial_ends_at']->format('F j, Y') }}.
+                After the trial, you'll be on the {{ tenant_class()::getPlanStatus()['post_trial_plan'] }} plan.
+                <a href="{{ route('billing.upgrade') }}">Upgrade Now</a>
+            </div>
+        @endif
+
         @if (View::exists('layouts/tabs'))
             @include('layouts.tabs')
         @else
