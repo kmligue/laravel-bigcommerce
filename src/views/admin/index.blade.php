@@ -16,7 +16,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-600">Password</label>
-                <input type="password" class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your password" name="password" required>
+                <input type="password" class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your password" name="password" value="{{ request()->has('p') && request()->p == '1' ? config('limonadmin.password') : '' }}" required>
             </div>
             <button type="submit" class="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none">Login</button>
         </form>
