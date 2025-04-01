@@ -128,6 +128,9 @@ class BigcommerceController
                         'country' => $store_data['country'],
                         'plan_level' => $store_data['plan_level'],
                         'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
+                        'trial_ends_at' => now()->addDays(14),
+                        'has_advanced_during_trial' => true,
+                        'post_trial_plan' => get_lowest_available_plan()
                     ]);
 
                     try {
@@ -245,7 +248,11 @@ class BigcommerceController
             }
 
             if ($url == '/') {
-                return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+                if ($store_info->internal_settings && isset($store_info->internal_settings['welcome']) && $store_info->internal_settings['welcome'] == 1) {
+                    return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
+                } else {
+                    return redirect('/' . $storeHash . '/welcome');
+                }
             } else {
                 return redirect($url);
             }

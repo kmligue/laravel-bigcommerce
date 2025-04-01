@@ -8,9 +8,9 @@ Route::get('/error', function () {
 });
 
 Route::group(['prefix' => 'auth'], function () {
-    Route::get('install', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'install'])->middleware('welcome.auth');
+    Route::get('install', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'install']);
 
-    Route::get('load', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'load'])->middleware('welcome.auth');
+    Route::get('load', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'load']);
 
     Route::get('uninstall', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'uninstall']);
 

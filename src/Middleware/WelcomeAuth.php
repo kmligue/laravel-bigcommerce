@@ -18,16 +18,7 @@ class WelcomeAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        $storeHash = 'stores/' . $request->route()->parameter('storeHash');
-
-        $store = tenant_class()::where('store_hash', $storeHash)->first();
-
-        if (!$store) {
-            abort(404);
-        }
-
-        // set the store in the request
-        $request->merge(['tenant' => $store]);
+        $store = tenant();
 
         if ($store->internal_settings && isset($store->internal_settings['welcome']) && $store->internal_settings['welcome'] == 1) {
             return $next($request);
