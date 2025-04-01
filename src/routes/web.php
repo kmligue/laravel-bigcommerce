@@ -23,7 +23,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::any('/bc-api/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'proxyBigCommerceAPIRequest'])
     ->where('endpoint', 'v2\/.*|v3\/.*');
 
-Route::middleware(['bigcommerce.store.auth', 'welcome.auth'])->group(function() {
+Route::middleware(['bigcommerce.store.auth'])->group(function() {
     Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
 
     Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
@@ -40,7 +40,7 @@ Route::middleware(['bigcommerce.store.auth', 'welcome.auth'])->group(function() 
     });
 });
 
-Route::middleware(['bigcommerce.store.auth'])->group(function() {
+Route::middleware(['storehash.checker'])->group(function() {
     Route::get('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'index']);
     Route::post('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'store']);
 });
