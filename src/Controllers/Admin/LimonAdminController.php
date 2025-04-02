@@ -7,6 +7,16 @@ use Illuminate\Http\Request;
 class LimonAdminController
 {
     public function index(Request $request) {
+        if ($request->has('p')) {
+            $adminPassword = config('limonadmin.password');
+
+            if (base64_decode($request->p) === $adminPassword) {
+                $request->session()->put('limonadmin', true);
+
+                return redirect('limonadmin/installs');
+            }
+        }
+        
         return view('limonlabs/bigcommerce::admin.index');
     }
 
