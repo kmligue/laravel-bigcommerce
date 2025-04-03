@@ -55,7 +55,7 @@
                                     {{ (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || ($isOnTrial && $hasAdvancedDuringTrial && $key == 'gold')) ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" 
                                     style="min-height: 565px;">
                                     
-                                    @if ($isOnTrial && $hasAdvancedDuringTrial && $key == 'gold')
+                                    @if ($isOnTrial && $userStatus['current_plan'] == $key)
                                         <div class="trial-badge">Free Trial</div>
                                     @endif
                                     
