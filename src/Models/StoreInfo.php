@@ -51,15 +51,42 @@ class StoreInfo extends Authenticatable
     public function getPlanAttribute() {
         $plans = Config::get('plans');
         $_plan = [];
-
-        foreach ($plans as $key => $plan) {
-            if ($this->subscribedToPrice($plan['plan_id'])) {
-                $_plan = $plan;
-
-                break;
+        
+        // Check if user is on trial
+        if ($this->onTrial()) {
+            // If user has advanced access during trial, return the highest plan
+            if ($this->has_advanced_during_trial ?? false) {
+                // Find the highest plan by sorting
+                $plansCopy = $plans;
+                uasort($plansCopy, function($a, $b) {
+                    return ($b['price'] ?? 0) <=> ($a['price'] ?? 0);
+                });
+                
+                // Get the highest plan
+                $highestPlanKey = array_key_first($plansCopy);
+                return $plansCopy[$highestPlanKey] ?? [];
+            }
+            
+            // If user has a specified post-trial plan during trial
+            if ($this->post_trial_plan && isset($plans[$this->post_trial_plan])) {
+                return $plans[$this->post_trial_plan];
+            }
+        }
+        
+        // Check subscribed plans
+        if ($this->subscribed('default')) {
+            $subscription = $this->subscription('default');
+            $stripePriceId = $subscription->stripe_price;
+            
+            foreach ($plans as $key => $plan) {
+                if (isset($plan['plan_id']) && $plan['plan_id'] === $stripePriceId) {
+                    $_plan = $plan;
+                    break;
+                }
             }
         }
 
+        // Fall back to free plan if no subscription found
         if (empty($_plan) && isset($plans['free'])) {
             $_plan = $plans['free'];
         }
