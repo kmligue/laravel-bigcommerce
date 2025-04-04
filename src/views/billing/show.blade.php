@@ -27,6 +27,13 @@
 @endsection
 
 @section('content')
+    @include('limonlabs/bigcommerce::billing.partials.tabs')
+
+    @php
+        $forceBillingDisplay = true;
+    @endphp
+    @include('limonlabs/bigcommerce::layouts.free-trial-notice', ['forceBillingDisplay' => true])
+
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Billing History'])
 
     <div class="bg-white shadow-md p-5 mt-8 w-1/2 mx-auto">

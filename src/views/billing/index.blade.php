@@ -30,6 +30,11 @@
 @section('content')
     @include('limonlabs/bigcommerce::billing.partials.tabs')
 
+    @php
+        $forceBillingDisplay = true;
+    @endphp
+    @include('limonlabs/bigcommerce::layouts.free-trial-notice', ['forceBillingDisplay' => true])
+
     @include('limonlabs/bigcommerce::layouts.page-title', ['title' => 'Pricing Plans'])
 
     @php
@@ -77,7 +82,16 @@
                                                 <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
                                             @else
                                                 <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
-                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ ($currentPlan && $currentPlan['price'] > $plan['price']) ? 'Downgrade' : 'Upgrade' }}</button>
+                                                    @php
+                                                        // Determine button text based on user's subscription status
+                                                        $buttonText = 'Sign Up';
+                                                        
+                                                        // If user already has a paid plan, use "Change" instead of "Upgrade/Downgrade"
+                                                        if ($currentPlan && isset($currentPlan['plan_id']) && $currentPlan['plan_id'] != Config::get('plans.free.plan_id', '')) {
+                                                            $buttonText = 'Change';
+                                                        }
+                                                    @endphp
+                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ $buttonText }}</button>
                                                 </form>
                                             @endif
                                         </div>

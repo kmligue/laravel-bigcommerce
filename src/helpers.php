@@ -118,3 +118,27 @@ if (!function_exists('get_lowest_available_plan')) {
         return key($availablePlans);
     }
 }
+
+if (!function_exists('get_highest_available_plan')) {
+    function get_highest_available_plan() {
+        $plans = config('plans');
+        
+        // Filter only plans that are shown/available
+        $availablePlans = array_filter($plans, function($plan) {
+            return isset($plan['show']) && $plan['show'] === true;
+        });
+        
+        // If no plans are available, return null
+        if (empty($availablePlans)) {
+            return null;
+        }
+        
+        // Sort by price in descending order
+        uasort($availablePlans, function($a, $b) {
+            return ($b['price'] ?? PHP_INT_MIN) <=> ($a['price'] ?? PHP_INT_MIN);
+        });
+        
+        // Return the key of the highest-priced plan
+        return key($availablePlans);
+    }
+}
