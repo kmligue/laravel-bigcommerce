@@ -96,14 +96,11 @@
                                             discount: 
                                             @php
                                                 $subscription = $store->subscription('default');
+                                                $planStatus = $store->getPlanStatus();
                                             @endphp
-                                            @if ($store->plan)
-                                                @if ($store->plan['plan_id'] != Config::get('plans.free.plan_id'))
-                                                    @if ($subscription->discount())
-                                                        {{ $subscription->discount()->amount_off / 100 }}% off
-                                                    @else
-                                                        None
-                                                    @endif
+                                            @if ($planStatus['is_subscribed'] && $planStatus['current_plan'] !== 'free')
+                                                @if ($subscription && method_exists($subscription, 'discount') && $subscription->discount())
+                                                    {{ $subscription->discount()->amount_off / 100 }}% off
                                                 @else
                                                     None
                                                 @endif
