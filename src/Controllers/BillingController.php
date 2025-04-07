@@ -115,4 +115,44 @@ class BillingController
 
         return view('limonlabs/bigcommerce::billing.history', compact('storeHash', 'invoices'));
     }
+
+    /**
+     * Cancel the user's active subscription
+     *
+     * @param Request $request
+     * @param string $storeHash
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function cancel(Request $request, $storeHash) {
+        try {
+            // Get active subscription
+            $subscription = tenant()->subscription('default');
+            
+            if ($subscription && $subscription->active()) {
+                // Cancel at period end to allow usage until current billing period ends
+                if ($request->has('end_of_period') && $request->end_of_period) {
+                    $subscription->cancelAtEndOfPeriod();
+                } else {
+                    // Cancel immediately
+                    $subscription->cancelNow();
+                }
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Subscription canceled successfully',
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'No active subscription found',
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel subscription: ' . $e->getMessage(),
+            ]);
+        }
+    }
 }

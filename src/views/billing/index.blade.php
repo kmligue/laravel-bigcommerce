@@ -39,6 +39,7 @@
 
     @php
         $plans = Config::get('plans');
+        $hasActiveSubscription = tenant()->subscription('default') && tenant()->subscription('default')->active();
     @endphp
 
     <div class="bg-white shadow-md p-5 mt-8">
@@ -78,8 +79,18 @@
                                             @endforeach
                                         </ul>
                                         <div class="mt-6 py-4">
-                                            @if (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || ($isOnTrial && $hasAdvancedDuringTrial && $key == 'gold'))
-                                                <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300" disabled>Current</a>
+                                            @if (!$isOnTrial && $currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])
+                                                <div>
+                                                    <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300 mb-2 block" disabled>Current</a>
+                                                    
+                                                    @if($hasActiveSubscription)
+                                                    <form method="post" action="{{ url('api/' . $storeHash . '/billing/cancel') }}" class="cancel-subscription-form mt-3">
+                                                        <button type="button" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cancel-subscription-button">
+                                                            Cancel
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                </div>
                                             @else
                                                 <form method="post" action="{{ url('api/' . $storeHash . '/billing/'. $key .'/select') }}" class="cancel-form">
                                                     @php
@@ -90,8 +101,22 @@
                                                         if ($currentPlan && isset($currentPlan['plan_id']) && $currentPlan['plan_id'] != Config::get('plans.free.plan_id', '')) {
                                                             $buttonText = 'Change';
                                                         }
+                                                        
+                                                        // Override: If this is the user's current trial plan, always use "Sign Up"
+                                                        if ($isOnTrial && $userStatus['current_plan'] == $key) {
+                                                            $buttonText = 'Sign Up';
+                                                        }
+                                                        
+                                                        // Determine button color class
+                                                        $buttonColorClass = 'bg-slate-400';
+                                                        
+                                                        // If this is the current plan (either on trial or paid), use a highlighted color
+                                                        if (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || 
+                                                            ($isOnTrial && $userStatus['current_plan'] == $key)) {
+                                                            $buttonColorClass = 'bg-indigo-600 hover:bg-indigo-700';
+                                                        }
                                                     @endphp
-                                                    <button type="button" class="bg-slate-400 text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ $buttonText }}</button>
+                                                    <button type="button" class="{{ $buttonColorClass }} text-xl text-white py-2 px-6 rounded transition-colors duration-300 cancel-button">{{ $buttonText }}</button>
                                                 </form>
                                             @endif
                                         </div>
@@ -148,6 +173,69 @@
                                     icon: 'error',
                                     showConfirmButton: false,
                                     timer: 1500
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Handle cancel subscription button
+            $('.cancel-subscription-button').on('click', function(e) {
+                e.preventDefault();
+                
+                var self = this;
+                
+                Swal.fire({
+                    title: 'Cancel Subscription',
+                    text: 'Are you sure you want to cancel your subscription?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, cancel it!',
+                    showDenyButton: true,
+                    denyButtonText: 'Cancel at period end',
+                    denyButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed || result.isDenied) {
+                        var form = $(self).closest('form');
+                        var url = form.attr('action');
+                        var data = form.serialize();
+                        
+                        // If user chose to cancel at end of billing period
+                        if (result.isDenied) {
+                            data += '&end_of_period=1';
+                        }
+                        
+                        $.ajax({
+                            url: url,
+                            type: 'post',
+                            data: data,
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: 'Subscription Canceled',
+                                        text: response.message,
+                                        icon: 'success',
+                                        showConfirmButton: false,
+                                        timer: 2000
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: response.message || 'Failed to cancel subscription.',
+                                        icon: 'error'
+                                    });
+                                }
+                            },
+                            error: function(response) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'An error occurred. Please try again.',
+                                    icon: 'error'
                                 });
                             }
                         });
