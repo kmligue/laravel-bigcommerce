@@ -38,7 +38,7 @@
     </div>
 
     <div class="pl-10 pr-10 pb-10 pt-0 mx-auto" style="max-width: 1300px;">
-        <div>COPYRIGHT &copy; {{ date('Y') }} <a href="https://limonlabs.dev/" target="_blank" class="text-blue-600">LimonLabs</a>. ALL RIGHTS RESERVED</div>
+        <div>COPYRIGHT &copy; {{ date('Y') }} <a href="https://limonlabs.dev/" target="_blank" class="text-blue-600">Limon Labs</a>. ALL RIGHTS RESERVED</div>
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
