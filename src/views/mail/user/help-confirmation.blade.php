@@ -12,5 +12,5 @@ Thanks for reaching out to us. We wanted to confirm that we received your Help m
 </x-mail::panel>
 
 Thanks,<br>
-<a href="https://limonlabs.dev/">Limon Labs Support</a>
+Limon Labs Support
 </x-mail::message> 
