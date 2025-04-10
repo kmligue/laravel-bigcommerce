@@ -4,6 +4,7 @@ namespace Limonlabs\Bigcommerce\Controllers;
 
 use Illuminate\Http\Request;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
+use Stripe\StripeClient;
 
 class BillingController
 {
@@ -27,7 +28,23 @@ class BillingController
             $priceId = '';
 
             if (isset($plans[$plan]) && !empty($plans[$plan])) {
-                $priceId = $plans[$plan]['plan_id'];
+                $planId = $plans[$plan]['plan_id'];
+                
+                // Check if this is a product ID (starts with prod_) or price ID (starts with price_)
+                if (strpos($planId, 'prod_') === 0) {
+                    // It's a product ID, we need to get the first price
+                    $stripe = new StripeClient(config('services.stripe.secret'));
+                    $prices = $stripe->prices->all(['product' => $planId, 'active' => true, 'limit' => 1]);
+                    
+                    if (count($prices->data) > 0) {
+                        $priceId = $prices->data[0]->id;
+                    } else {
+                        throw new \Exception('No active prices found for this product.');
+                    }
+                } else {
+                    // It's already a price ID
+                    $priceId = $planId;
+                }
 
                 $response = tenant()->newSubscription('default', $priceId)->create($request->paymentMethod, [
                     'email' => tenant()->user_email
@@ -63,7 +80,26 @@ class BillingController
         $priceId = '';
 
         if (isset($plans[$plan]) && !empty($plans[$plan])) {
-            $priceId = $plans[$plan]['plan_id'];
+            $planId = $plans[$plan]['plan_id'];
+            
+            // Check if this is a product ID (starts with prod_) or price ID (starts with price_)
+            if (strpos($planId, 'prod_') === 0) {
+                // It's a product ID, we need to get the first price
+                $stripe = new StripeClient(config('services.stripe.secret'));
+                $prices = $stripe->prices->all(['product' => $planId, 'active' => true, 'limit' => 1]);
+                
+                if (count($prices->data) > 0) {
+                    $priceId = $prices->data[0]->id;
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No active prices found for this product.'
+                    ]);
+                }
+            } else {
+                // It's already a price ID
+                $priceId = $planId;
+            }
 
             if (tenant()->subscription() && tenant()->hasPaymentMethod()) {
                 $paymentMethod = tenant()->defaultPaymentMethod();
