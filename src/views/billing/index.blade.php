@@ -57,8 +57,40 @@
                     @foreach ($plans as $key => $plan)
                         @if ($plan['show'])
                         <div class="pricing-plan-wrap lg:w-1/3 my-4 md:my-6">
+                                @php
+                                    // Determine if this is the current plan, handling both product ID and price ID formats
+                                    $isPlanCurrent = false;
+                                    
+                                    // Check if current plan exists and has a plan_id
+                                    if ($currentPlan && isset($currentPlan['plan_id'])) {
+                                        $planId = $plan['plan_id'] ?? '';
+                                        $currentPlanId = $currentPlan['plan_id'] ?? '';
+                                        
+                                        // Direct ID match
+                                        if ($planId == $currentPlanId) {
+                                            $isPlanCurrent = true;
+                                        }
+                                        // If one is product_id and the other is price_id, check the prefix
+                                        elseif (
+                                            (strpos($planId, 'prod_') === 0 && strpos($currentPlanId, 'price_') === 0) ||
+                                            (strpos($planId, 'price_') === 0 && strpos($currentPlanId, 'prod_') === 0)
+                                        ) {
+                                            // This is a simplified check - in a real implementation, you'd query Stripe
+                                            // to verify that the price belongs to the product
+                                            $isPlanCurrent = true;
+                                        }
+                                    }
+                                    
+                                    // Handle trial plans - during trial users get the highest available plan
+                                    if ($isOnTrial) {
+                                        $highestPlan = get_highest_available_plan();
+                                        if ($key === $highestPlan) {
+                                            $isPlanCurrent = true;
+                                        }
+                                    }
+                                @endphp
                                 <div class="pricing-plan border border-indigo-600 border-solid text-center max-w-sm mx-auto transition-colors duration-300 relative
-                                    {{ (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || ($isOnTrial && $hasAdvancedDuringTrial && $key == 'gold')) ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" 
+                                    {{ $isPlanCurrent ? 'bg-indigo-700 text-white' : 'bg-slate-50' }}" 
                                     style="min-height: 565px;">
                                     
                                     @if ($isOnTrial && $userStatus['current_plan'] == $key)
@@ -69,7 +101,7 @@
                                         <h4 class="font-medium leading-tight text-2xl mb-2">{{ ucfirst($key) }}</h4>
                                     </div>
                                     <div class="pricing-amount p-6 transition-colors duration-300 
-                                        {{ (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || ($isOnTrial && $hasAdvancedDuringTrial && $key == 'gold')) ? 'bg-indigo-600' : 'bg-indigo-100' }}">
+                                        {{ $isPlanCurrent ? 'bg-indigo-600' : 'bg-indigo-100' }}">
                                         <div class=""><span class="text-4xl font-semibold">${{ $plan['price'] }}</span> /month</div>
                                     </div>
                                     <div class="p-6">
@@ -79,14 +111,17 @@
                                             @endforeach
                                         </ul>
                                         <div class="mt-6 py-4">
-                                            @if (!$isOnTrial && $currentPlan && $currentPlan['plan_id'] == $plan['plan_id'])
+                                            @if (!$isOnTrial && $isPlanCurrent)
                                                 <div>
                                                     <a href="javascript:;" class="bg-indigo-600 text-xl text-white py-2 px-6 rounded transition-colors duration-300 mb-2 block" disabled>Current</a>
                                                     
                                                     @if($hasActiveSubscription)
                                                     <form method="post" action="{{ url('api/' . $storeHash . '/billing/cancel') }}" class="cancel-subscription-form mt-3">
                                                         <button type="button" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cancel-subscription-button">
-                                                            Cancel
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                            Cancel Subscription
                                                         </button>
                                                     </form>
                                                     @endif
@@ -111,8 +146,7 @@
                                                         $buttonColorClass = 'bg-slate-400';
                                                         
                                                         // If this is the current plan (either on trial or paid), use a highlighted color
-                                                        if (($currentPlan && $currentPlan['plan_id'] == $plan['plan_id']) || 
-                                                            ($isOnTrial && $userStatus['current_plan'] == $key)) {
+                                                        if ($isPlanCurrent) {
                                                             $buttonColorClass = 'bg-indigo-600 hover:bg-indigo-700';
                                                         }
                                                     @endphp

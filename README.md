@@ -56,6 +56,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Stripe\StripeClient;
+use Illuminate\Support\Facades\Log;
 
 class StoreInfo extends Authenticatable
 {
@@ -97,15 +99,63 @@ class StoreInfo extends Authenticatable
     public function getPlanAttribute() {
         $plans = Config::get('plans');
         $_plan = [];
-
-        foreach ($plans as $key => $plan) {
-            if ($this->subscribedToPrice($plan['plan_id'])) {
-                $_plan = $plan;
-
-                break;
+        
+        // Check if user is on trial
+        if ($this->onTrial()) {
+            // If user has advanced access during trial, return the highest plan
+            if ($this->has_advanced_during_trial ?? false) {
+                // Find the highest plan by sorting
+                $plansCopy = $plans;
+                uasort($plansCopy, function($a, $b) {
+                    return ($b['price'] ?? 0) <=> ($a['price'] ?? 0);
+                });
+                
+                // Get the highest plan
+                $highestPlanKey = array_key_first($plansCopy);
+                return $plansCopy[$highestPlanKey] ?? [];
+            }
+            
+            // If user has a specified post-trial plan during trial
+            if ($this->post_trial_plan && isset($plans[$this->post_trial_plan])) {
+                return $plans[$this->post_trial_plan];
+            }
+        }
+        
+        // Check subscribed plans
+        if ($this->subscribed('default')) {
+            $subscription = $this->subscription('default');
+            $stripePriceId = $subscription->stripe_price;
+            
+            // Get the product ID from the subscription items table
+            $stripeProductId = null;
+            $subscriptionItem = DB::table('subscription_items')
+                ->where('subscription_id', $subscription->id)
+                ->first();
+                
+            if ($subscriptionItem && isset($subscriptionItem->stripe_product)) {
+                $stripeProductId = $subscriptionItem->stripe_product;
+            }
+            
+            foreach ($plans as $key => $plan) {
+                if (isset($plan['plan_id'])) {
+                    $planId = $plan['plan_id'];
+                    
+                    // Direct match with price ID
+                    if ($planId === $stripePriceId) {
+                        $_plan = $plan;
+                        break;
+                    }
+                    
+                    // Match with product ID (if we have it)
+                    if ($stripeProductId && $planId === $stripeProductId) {
+                        $_plan = $plan;
+                        break;
+                    }
+                }
             }
         }
 
+        // Fall back to free plan if no subscription found
         if (empty($_plan) && isset($plans['free'])) {
             $_plan = $plans['free'];
         }
@@ -175,13 +225,35 @@ class StoreInfo extends Authenticatable
             $subscription = $this->subscription('default');
             $stripePriceId = $subscription->stripe_price;
             
-            // Match the stripe_price to a plan in the config
+            // Get the product ID from the subscription items table
+            $stripeProductId = null;
+            $subscriptionItem = DB::table('subscription_items')
+                ->where('subscription_id', $subscription->id)
+                ->first();
+                
+            if ($subscriptionItem && isset($subscriptionItem->stripe_product)) {
+                $stripeProductId = $subscriptionItem->stripe_product;
+            }
+            
+            // Match the stripe_price or stripe_product to a plan in the config
             $plans = config('plans');
             foreach ($plans as $planKey => $planDetails) {
-                if (isset($planDetails['plan_id']) && $planDetails['plan_id'] === $stripePriceId) {
-                    $result['current_plan'] = $planKey;
-                    $result['plan_details'] = $planDetails;
-                    break;
+                if (isset($planDetails['plan_id'])) {
+                    $planId = $planDetails['plan_id'];
+                    
+                    // Direct match with price ID
+                    if ($planId === $stripePriceId) {
+                        $result['current_plan'] = $planKey;
+                        $result['plan_details'] = $planDetails;
+                        break;
+                    }
+                    
+                    // Match with product ID (if we have it)
+                    if ($stripeProductId && $planId === $stripeProductId) {
+                        $result['current_plan'] = $planKey;
+                        $result['plan_details'] = $planDetails;
+                        break;
+                    }
                 }
             }
         }
