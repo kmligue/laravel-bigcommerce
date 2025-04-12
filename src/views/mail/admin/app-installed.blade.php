@@ -1,4 +1,6 @@
 <x-mail::message>
+# New Site Install
+
 Store Hash: **{{ str_replace('stores/', '', $storeInfo->store_hash) }}**
 
 Store Name: **{{ $storeInfo->name }}**

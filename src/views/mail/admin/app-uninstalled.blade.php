@@ -1,3 +1,17 @@
 <x-mail::message>
-    Store **{{ $storeInfo->store_hash }}**, named **{{ $storeInfo->name }}**. Has uninstalled **{{ config('app.name') }}**.
+# Site Uninstall
+
+Store Hash: **{{ str_replace('stores/', '', $storeInfo->store_hash) }}**
+
+Store Name: **{{ $storeInfo->name }}**
+
+Email: **{{ $storeInfo->user_email }}**
+
+@if ($storeInfo->getPlanStatus()['current_plan'])
+Plan: **{{ $storeInfo->getPlanStatus()['current_plan'] }}**
+@endif
+
+@if ($storeInfo->getPlanStatus()['trial_ends_at'])
+Trial Ends At: **{{ $storeInfo->trial_ends_at ? $storeInfo->trial_ends_at->format('F d, Y') : 'N/A' }}**
+@endif
 </x-mail::message>
