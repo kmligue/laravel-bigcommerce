@@ -8,13 +8,15 @@
     $trialEnded = $status['is_on_trial'] && now()->greaterThanOrEqualTo($status['trial_ends_at']);
     $planName = $status['post_trial_plan'] ? ucfirst($status['post_trial_plan']) : ucfirst(get_lowest_available_plan());
     $trialEndDate = isset($status['trial_ends_at']) ? $status['trial_ends_at']->format('F d, Y') : '';
+    $trialEndDateISO = isset($status['trial_ends_at']) ? $status['trial_ends_at']->toISOString() : '';
     
     // Check if a paid plan has expired - using same logic as ExpiredMiddleware
     $planExpired = !$status['is_on_trial'] && !$status['is_subscribed'] && $status['post_trial_plan'] != 'free';
 @endphp
 
 @if($status['is_on_trial'] || $trialEnded || $planExpired)
-<div class="w-full bg-gradient-to-r {{ $planExpired || $trialEnded ? 'from-red-100 to-red-50' : ($daysLeft <= 3 ? 'from-amber-100 to-amber-50' : 'from-blue-100 to-blue-50') }} rounded-lg shadow-sm my-6">
+<div class="w-full bg-gradient-to-r {{ $planExpired || $trialEnded ? 'from-red-100 to-red-50' : ($daysLeft <= 3 ? 'from-amber-100 to-amber-50' : 'from-blue-100 to-blue-50') }} rounded-lg shadow-sm my-6 trial-notice" 
+    @if($status['is_on_trial'] && !$trialEnded) data-trial-end="{{ $trialEndDateISO }}" @endif>
     <div class="px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -46,7 +48,10 @@
                     </div>
                     <div>
                         <h3 class="text-base font-medium text-amber-800">Your trial is ending soon</h3>
-                        <p class="text-sm text-amber-700">{{ floor($daysLeft) }} {{ Str::plural('day', $daysLeft) }} remaining. Free trial ends on {{ $trialEndDate }}.</p>
+                        <p class="text-sm text-amber-700">
+                            <span class="days-left" data-server-days="{{ floor($daysLeft) }}">{{ floor($daysLeft) }}</span> {{ Str::plural('day', $daysLeft) }} remaining. 
+                            Free trial ends on <span class="formatted-date" data-date="{{ $trialEndDateISO }}">{{ $trialEndDate }}</span>.
+                        </p>
                     </div>
                 @else
                     <div class="flex-shrink-0">
@@ -56,7 +61,10 @@
                     </div>
                     <div>
                         <h3 class="text-base font-medium text-blue-800">You are on free trial of the {{ ucfirst(get_highest_available_plan()) }} plan with access to all its features.</h3>
-                        <p class="text-sm text-blue-700">{{ floor($daysLeft) }} {{ Str::plural('day', $daysLeft) }} remaining. Free trial ends on {{ $trialEndDate }}.</p>
+                        <p class="text-sm text-blue-700">
+                            <span class="days-left" data-server-days="{{ floor($daysLeft) }}">{{ floor($daysLeft) }}</span> {{ Str::plural('day', $daysLeft) }} remaining. 
+                            Free trial ends on <span class="formatted-date" data-date="{{ $trialEndDateISO }}">{{ $trialEndDate }}</span>.
+                        </p>
                     </div>
                 @endif
             </div>

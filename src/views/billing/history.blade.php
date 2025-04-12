@@ -21,7 +21,11 @@
             <tbody class="bg-white">
                 @foreach ($invoices as $invoice)
                     <tr>
-                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">{{ $invoice->date()->toFormattedDateString() }}</td>
+                        <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
+                            <span class="formatted-date" data-date="{{ $invoice->date()->toISOString() }}">
+                                {{ $invoice->date()->format('F j, Y') }}
+                            </span>
+                        </td>
                         <td class="border-b border-[#d1d5db] p-4 pl-8 text-slate-500">
                             @foreach ($invoice->subscriptions() as $subscription)
                                 @php

@@ -49,6 +49,83 @@
             });
         });
     </script>
+
+    <script>
+        // Format dates based on user's browser locale
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format dates using the user's locale
+            const dateElements = document.querySelectorAll('.formatted-date');
+            dateElements.forEach(function(element) {
+                const isoDate = element.getAttribute('data-date');
+                if (isoDate) {
+                    try {
+                        const date = new Date(isoDate);
+                        // Format the date using the user's locale and a user-friendly format
+                        const formattedDate = new Intl.DateTimeFormat(navigator.language, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }).format(date);
+                        element.textContent = formattedDate;
+                    } catch (e) {
+                        console.error('Error formatting date:', e);
+                    }
+                }
+            });
+            
+            // Calculate days left based on user's local timezone
+            const trialNotices = document.querySelectorAll('.trial-notice');
+            trialNotices.forEach(function(notice) {
+                const trialEndDate = notice.getAttribute('data-trial-end');
+                if (trialEndDate) {
+                    try {
+                        // Get today's date at midnight in user's timezone
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        // Get trial end date in user's timezone
+                        const endDate = new Date(trialEndDate);
+                        endDate.setHours(23, 59, 59, 999); // End of day
+                        
+                        // Calculate the difference in days
+                        const timeDiff = endDate.getTime() - today.getTime();
+                        const daysLeft = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
+                        
+                        // Update all days-left elements in this notice
+                        const daysLeftElements = notice.querySelectorAll('.days-left');
+                        daysLeftElements.forEach(function(el) {
+                            el.textContent = daysLeft;
+                            el.setAttribute('data-client-days', daysLeft);
+                            
+                            // Update the plural text for "day"/"days"
+                            const nextSibling = el.nextSibling;
+                            if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
+                                const text = nextSibling.textContent;
+                                if (text.includes('day')) {
+                                    nextSibling.textContent = ' ' + (daysLeft === 1 ? 'day' : 'days') + ' remaining. ';
+                                }
+                            }
+                            
+                            // Update the notice color based on days left
+                            if (daysLeft <= 3) {
+                                notice.classList.remove('from-blue-100', 'to-blue-50');
+                                notice.classList.add('from-amber-100', 'to-amber-50');
+                                
+                                // Update the button color if it exists
+                                const button = notice.querySelector('a[href*="/billing"]');
+                                if (button) {
+                                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'focus:ring-blue-500');
+                                    button.classList.add('bg-amber-600', 'hover:bg-amber-700', 'focus:ring-amber-500');
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error calculating days left:', e);
+                    }
+                }
+            });
+        });
+    </script>
     @yield('footer')
 </body>
 </html>
