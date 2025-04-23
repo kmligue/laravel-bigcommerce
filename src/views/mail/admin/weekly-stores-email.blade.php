@@ -18,7 +18,7 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    {{ $store->name }}
+    <span>{{ $store->name }}</span>
     <br />
     <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
 </td>
@@ -41,7 +41,7 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    {{ $store->name }}
+    <span>{{ $store->name }}</span>
     <br />
     <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
 </td>
@@ -65,7 +65,7 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    {{ $store->name }}
+    <span>{{ $store->name }}</span>
     <br />
     <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
 </td>
@@ -98,7 +98,7 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    {{ $store->name }}
+    <span>{{ $store->name }}</span>
     <br />
     <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
 </td>
