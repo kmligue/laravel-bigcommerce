@@ -1,7 +1,22 @@
-<x-mail::message>
-    Name: {{ $data['name'] }}
+<x-mail::layout>
+{{-- Header --}}
+<x-slot:header>
+<x-mail::header :url="config('app.url')">
+{{ config('app.name') }}
+</x-mail::header>
+</x-slot:header>
 
-    Email: {{ $data['email'] }}
+Name: {{ $data['name'] }}
 
-    Message: {{ $data['message'] }}
-</x-mail::message>
+Email: {{ $data['email'] }}
+
+Message: {{ $data['message'] }}
+
+{{-- Footer --}}
+<x-slot:footer>
+<x-mail::footer>
+© {{ date('Y') }} <a href="https://limonlabs.dev">Limon Labs.</a> {{ __('All rights reserved.') }}
+</x-mail::footer>
+</x-slot:footer>
+</x-mail::layout>
+
