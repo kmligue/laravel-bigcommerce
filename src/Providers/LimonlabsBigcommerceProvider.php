@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Mail;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Mail\Transports\SendgridHttp;
 use Psr\Log\LoggerInterface;
-use Illuminate\Console\Scheduling\Schedule;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {

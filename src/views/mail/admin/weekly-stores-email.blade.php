@@ -126,9 +126,6 @@
 @endisset
 
 {{-- Footer --}}
-<x-slot:footer>
-<x-mail::footer>
-© {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
-</x-mail::footer>
-</x-slot:footer>
+@include('limonlabs/bigcommerce::mail.partial.footer')
+
 </x-mail::layout>

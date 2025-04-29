@@ -1,4 +1,11 @@
-<x-mail::message>
+<x-mail::layout>
+{{-- Header --}}
+<x-slot:header>
+<x-mail::header :url="config('app.url')">
+{{ config('app.name') }}
+</x-mail::header>
+</x-slot:header>
+
 # New Site Install
 
 Store Hash: **{{ str_replace('stores/', '', $storeInfo->store_hash) }}**
@@ -14,4 +21,11 @@ Plan: **{{ $storeInfo->getPlanStatus()['current_plan'] }}**
 @if ($storeInfo->getPlanStatus()['trial_ends_at'])
 Trial Ends At: **{{ $storeInfo->trial_ends_at ? $storeInfo->trial_ends_at->format('F d, Y') : 'N/A' }}**
 @endif
-</x-mail::message>
+
+{{-- Footer --}}
+@include('limonlabs/bigcommerce::mail.partial.footer')
+
+</x-mail::layout>
+
+
+

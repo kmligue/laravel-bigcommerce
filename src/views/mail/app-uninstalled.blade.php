@@ -1,4 +1,11 @@
-<x-mail::message>
+<x-mail::layout>
+{{-- Header --}}
+<x-slot:header>
+<x-mail::header :url="config('app.url')">
+{{ config('app.name') }}
+</x-mail::header>
+</x-slot:header>
+
 Hello {{ $storeInfo->first_name }},
 
 We're sorry to see you go, but we are writing to confirm that your uninstall is completed and your subscription has now been cancelled. 
@@ -9,4 +16,11 @@ We are always here to help. For any questions, please drop up a line at support@
 
 Our best,<br>
 The {{ config('app.name') }} Team
-</x-mail::message>
+
+{{-- Footer --}}
+@include('limonlabs/bigcommerce::mail.partial.footer')
+
+</x-mail::layout>
+
+
+
