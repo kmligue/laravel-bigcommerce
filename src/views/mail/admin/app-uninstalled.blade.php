@@ -10,9 +10,9 @@
 
 Store Hash: **{{ str_replace('stores/', '', $storeInfo->store_hash) }}**
 
-Store Name: **{{ $storeInfo->name }}**
+Store Name: **{{ trim($storeInfo->name) }}**
 
-Email: **{{ $storeInfo->user_email }}**
+Email: **{{ trim($storeInfo->user_email) }}**
 
 @if ($storeInfo->getPlanStatus()['current_plan'])
 Plan: **{{ $storeInfo->getPlanStatus()['current_plan'] }}**

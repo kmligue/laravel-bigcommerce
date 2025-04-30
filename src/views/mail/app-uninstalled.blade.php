@@ -6,7 +6,7 @@
 </x-mail::header>
 </x-slot:header>
 
-Hello {{ $storeInfo->first_name }},
+Hello {{ trim($storeInfo->first_name) }},
 
 We're sorry to see you go, but we are writing to confirm that your uninstall is completed and your subscription has now been cancelled. 
 

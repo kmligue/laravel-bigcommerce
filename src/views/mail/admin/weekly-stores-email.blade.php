@@ -18,9 +18,9 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    <span>{{ $store->name }}</span>
+    <span>{{ trim($store->name) }}</span>
     <br />
-    <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
+    <small style="font-size: 12px;">{{ trim($store->first_name) }} {{ trim($store->last_name) }}</small>
 </td>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ $store->trial_ends_at->format('M d, Y') }}</td>
 </tr>
@@ -41,9 +41,9 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    <span>{{ $store->name }}</span>
+    <span>{{ trim($store->name) }}</span>
     <br />
-    <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
+    <small style="font-size: 12px;">{{ trim($store->first_name) }} {{ trim($store->last_name) }}</small>
 </td>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ $store->trial_ends_at->format('M d, Y') }}</td>
 </tr>
@@ -65,9 +65,9 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    <span>{{ $store->name }}</span>
+    <span>{{ trim($store->name) }}</span>
     <br />
-    <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
+    <small style="font-size: 12px;">{{ trim($store->first_name) }} {{ trim($store->last_name) }}</small>
 </td>
 <td style="border: 1px solid #ddd; padding: 10px;">
     @if ($store->plan)
@@ -98,9 +98,9 @@
 <tr>
 <td style="border: 1px solid #ddd; padding: 10px;">{{ str_replace('stores/', '', $store->store_hash) }}</td>
 <td style="border: 1px solid #ddd; padding: 10px;">
-    <span>{{ $store->name }}</span>
+    <span>{{ trim($store->name) }}</span>
     <br />
-    <small style="font-size: 12px;">{{ $store->first_name }} {{ $store->last_name }}</small>
+    <small style="font-size: 12px;">{{ trim($store->first_name) }} {{ trim($store->last_name) }}</small>
 </td>
 <td style="border: 1px solid #ddd; padding: 10px;">
     @if ($store->plan)

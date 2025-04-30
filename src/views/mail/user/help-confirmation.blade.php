@@ -11,11 +11,11 @@ Hello {{ $data['name'] }},
 Thanks for reaching out to us. We wanted to confirm that we received your Help message and will be looking at it shortly. The information you submitted to us is below:
 
 <x-mail::panel>
-**Message:** {{ $data['message'] }}
+**Message:** {{ trim($data['message']) }}
 
-**Name:** {{ $data['name'] }}  
+**Name:** {{ trim($data['name']) }}  
 
-**Email:** {{ $data['email'] }}  
+**Email:** {{ trim($data['email']) }}  
 </x-mail::panel>
 
 Thanks,<br>

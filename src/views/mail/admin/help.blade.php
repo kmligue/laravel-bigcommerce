@@ -6,11 +6,11 @@
 </x-mail::header>
 </x-slot:header>
 
-Name: {{ $data['name'] }}
+Name: {{ trim($data['name']) }}
 
-Email: {{ $data['email'] }}
+Email: {{ trim($data['email']) }}
 
-Message: {{ $data['message'] }}
+Message: {{ trim($data['message']) }}
 
 {{-- Footer --}}
 @include('limonlabs/bigcommerce::mail.partial.footer')

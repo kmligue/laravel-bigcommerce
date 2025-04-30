@@ -6,7 +6,7 @@
 </x-mail::header>
 </x-slot:header>
 
-Hello {{ $storeInfo->first_name }},
+Hello {{ trim($storeInfo->first_name) }},
 
 Thank you for installing {{ config('app.name') }}. Your account has been successfully set up, and you can now begin using the application.
 
