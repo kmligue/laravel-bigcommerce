@@ -11,11 +11,11 @@ class BcClient
     protected string $baseUrl;
     protected array $headers;
 
-    public function __construct()
+    public function __construct($token = '')
     {
         $this->baseUrl = config('services.bigcommerce.url');
         $this->headers = [
-            'X-Auth-Token' => config('services.bigcommerce.token'),
+            'X-Auth-Token' => $token ?: config('services.bigcommerce.token'),
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ];
