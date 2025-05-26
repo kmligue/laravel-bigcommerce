@@ -3,6 +3,10 @@
         <p class="font-bold">Success</p>
         <p>{{ session('success') }}</p>
     </div>
+
+    @php
+        session()->forget('success');
+    @endphp
 @endif
 
 @if (session('error'))
@@ -10,6 +14,10 @@
         <p class="font-bold">Error</p>
         <p>{{ session('error') }}</p>
     </div>
+
+    @php
+        session()->forget('error');
+    @endphp
 @endif
 
 @if (isset($errors) && $errors->any())
