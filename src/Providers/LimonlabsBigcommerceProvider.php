@@ -118,7 +118,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                     try {
                         // Send email to the dev
                         Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
-                            ->send(new NewSitePaidPlan(tenant()));
+                            ->send(new NewSitePaidPlan($user));
                     } catch (\Throwable $th) {
                         //throw $th;
                     }
