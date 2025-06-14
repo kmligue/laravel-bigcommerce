@@ -5,8 +5,6 @@ namespace Limonlabs\Bigcommerce\Controllers;
 use Illuminate\Http\Request;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
 use Stripe\StripeClient;
-use Illuminate\Support\Facades\Mail;
-use Limonlabs\Bigcommerce\Mail\Admin\NewSitePaidPlan;
 
 class BillingController
 {
@@ -111,14 +109,6 @@ class BillingController
                 }
 
                 tenant()->newSubscription('default', $priceId)->create($paymentMethod->id);
-
-                try {
-                    // Send email to the dev
-                    Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
-                        ->send(new NewSitePaidPlan(tenant()));
-                } catch (\Throwable $th) {
-                    //throw $th;
-                }
 
                 return response()->json([
                     'success' => true

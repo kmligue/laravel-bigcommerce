@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Mail;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Mail\Transports\SendgridHttp;
 use Psr\Log\LoggerInterface;
+use Laravel\Cashier\Events\WebhookReceived;
+use Limonlabs\Bigcommerce\Mail\Admin\NewSitePaidPlan;
+use Illuminate\Support\Facades\Event;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
@@ -104,6 +107,23 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 config('mail.mailers.sendgrid-http.api_key'),
                 app(LoggerInterface::class)
             );
+        });
+
+        Event::listen(WebhookReceived::class, function (WebhookReceived $event) {
+            if ($event->payload['type'] === 'customer.subscription.created') {
+                $stripeCustomerId = $event->payload['data']['object']['customer'];
+    
+                $user = \Limonlabs\Bigcommerce\Models\StoreInfo::where('stripe_id', $stripeCustomerId)->first();
+                if ($user) {
+                    try {
+                        // Send email to the dev
+                        Mail::to(array_map('trim', explode(',', config('mail.from.admin_address'))))
+                            ->send(new NewSitePaidPlan(tenant()));
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
+                }
+            }
         });
     }
 }
