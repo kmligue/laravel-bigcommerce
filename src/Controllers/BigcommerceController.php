@@ -344,6 +344,8 @@ class BigcommerceController
                     if ($store_info->plan && $store_info->subscription() && $store_info->subscription()->stripe_status == 'active') {
                         $store_info->subscription('default')->cancelNow();
                     }
+
+                    $this->uninstallWebhooks($store_info);
     
                     try {
                         // Rename all tenant tables
@@ -396,6 +398,15 @@ class BigcommerceController
                     $hook[$key] = str_replace('{storeHash}', $storeHash, $value);
                 }
 
+                if (isset($hook['is_active'])) {
+                    // convert properly to boolean
+                    $hook['is_active'] = filter_var($hook['is_active'], FILTER_VALIDATE_BOOLEAN);
+                }
+                
+                if (isset($hook['events_history_enabled'])) {
+                    $hook['events_history_enabled'] = filter_var($hook['events_history_enabled'], FILTER_VALIDATE_BOOLEAN);
+                }
+
                 $response = Http::withHeaders([
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
@@ -420,6 +431,10 @@ class BigcommerceController
                 }
             }
         }
+    }
+
+    protected function uninstallWebhooks($store) {
+        $store->webhooks()->delete();
     }
 
     protected function installScripts($store_info) {
