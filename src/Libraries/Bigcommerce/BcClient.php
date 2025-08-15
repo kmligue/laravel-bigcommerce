@@ -42,11 +42,13 @@ class BcClient
 
     protected function logError(string $message, string $endpoint, $response, array $options = [])
     {
-        if (!config('bigcommerce.enable_logging', false)) {
+        $loggingEnabled = config('bigcommerce.enable_logging', false);
+        
+        if (!$loggingEnabled) {
             return;
         }
         
-        Log::channel('bigcommerce')->error($message, [
+        Log::error("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'status' => $response->status(),
             'options' => $options,
@@ -56,11 +58,13 @@ class BcClient
 
     protected function logException(string $message, string $endpoint, Throwable $e)
     {
-        if (!config('bigcommerce.enable_logging', false)) {
+        $loggingEnabled = config('bigcommerce.enable_logging', false);
+        
+        if (!$loggingEnabled) {
             return;
         }
         
-        Log::channel('bigcommerce')->error($message, [
+        Log::error("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'exception' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
@@ -69,11 +73,13 @@ class BcClient
 
     protected function logSuccess(string $message, string $endpoint, $response, array $options = [])
     {
-        if (!config('bigcommerce.enable_logging', false)) {
+        $loggingEnabled = config('bigcommerce.enable_logging', false);
+        
+        if (!$loggingEnabled) {
             return;
         }
         
-        Log::channel('bigcommerce')->info($message, [
+        Log::info("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'status' => $response->status(),
             'method' => request()->method() ?? 'CLI',
