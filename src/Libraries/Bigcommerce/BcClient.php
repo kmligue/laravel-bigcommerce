@@ -48,7 +48,7 @@ class BcClient
             return;
         }
         
-        Log::error("[BigCommerce] " . $message, [
+        Log::channel('bigcommerce')->error("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'status' => $response->status(),
             'options' => $options,
@@ -64,7 +64,7 @@ class BcClient
             return;
         }
         
-        Log::error("[BigCommerce] " . $message, [
+        Log::channel('bigcommerce')->error("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'exception' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
@@ -79,7 +79,7 @@ class BcClient
             return;
         }
         
-        Log::info("[BigCommerce] " . $message, [
+        Log::channel('bigcommerce')->info("[BigCommerce] " . $message, [
             'endpoint' => $endpoint,
             'status' => $response->status(),
             'method' => request()->method() ?? 'CLI',
