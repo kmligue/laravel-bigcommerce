@@ -28,7 +28,9 @@ class BcClient
                 ->{$method}($this->baseUrl . $endpoint, $options);
 
             if ($response->failed()) {
-                $this->logError("BC API Error", $endpoint, $response);
+                $this->logError("BC API Error", $endpoint, $response, $options);
+            } else {
+                $this->logSuccess("BC API Success", $endpoint, $response, $options);
             }
 
             return $response;
@@ -38,21 +40,45 @@ class BcClient
         }
     }
 
-    protected function logError(string $message, string $endpoint, $response)
+    protected function logError(string $message, string $endpoint, $response, array $options = [])
     {
+        if (!config('bigcommerce.enable_logging', true)) {
+            return;
+        }
+        
         Log::channel('bigcommerce')->error($message, [
             'endpoint' => $endpoint,
             'status' => $response->status(),
+            'options' => $options,
             'body' => $response->body(),
         ]);
     }
 
     protected function logException(string $message, string $endpoint, Throwable $e)
     {
+        if (!config('bigcommerce.enable_logging', true)) {
+            return;
+        }
+        
         Log::channel('bigcommerce')->error($message, [
             'endpoint' => $endpoint,
             'exception' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
+        ]);
+    }
+
+    protected function logSuccess(string $message, string $endpoint, $response, array $options = [])
+    {
+        if (!config('bigcommerce.enable_logging', true)) {
+            return;
+        }
+        
+        Log::channel('bigcommerce')->info($message, [
+            'endpoint' => $endpoint,
+            'status' => $response->status(),
+            'method' => request()->method() ?? 'CLI',
+            'options' => $options,
+            'body' => $response->body(),
         ]);
     }
 }

@@ -8,4 +8,15 @@ return [
     'bc_app_secret' => env('BC_APP_SECRET'),
     'bc_local_access_token' => env('BC_LOCAL_ACCESS_TOKEN'),
     'bc_local_store_hash' => env('BC_LOCAL_STORE_HASH'),
+    
+    /*
+    |--------------------------------------------------------------------------
+    | API Logging Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Enable or disable logging for BigCommerce API requests and responses.
+    | This can be useful for debugging in development or monitoring in production.
+    |
+    */
+    'enable_logging' => env('BC_ENABLE_LOGGING', true),
 ];
