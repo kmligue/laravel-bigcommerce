@@ -42,7 +42,7 @@ class BcClient
 
     protected function logError(string $message, string $endpoint, $response, array $options = [])
     {
-        if (!config('bigcommerce.enable_logging', true)) {
+        if (!config('bigcommerce.enable_logging', false)) {
             return;
         }
         
@@ -56,7 +56,7 @@ class BcClient
 
     protected function logException(string $message, string $endpoint, Throwable $e)
     {
-        if (!config('bigcommerce.enable_logging', true)) {
+        if (!config('bigcommerce.enable_logging', false)) {
             return;
         }
         
@@ -69,7 +69,7 @@ class BcClient
 
     protected function logSuccess(string $message, string $endpoint, $response, array $options = [])
     {
-        if (!config('bigcommerce.enable_logging', true)) {
+        if (!config('bigcommerce.enable_logging', false)) {
             return;
         }
         
