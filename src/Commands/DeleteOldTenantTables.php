@@ -27,7 +27,7 @@ class DeleteOldTenantTables extends Command
             foreach ($tables as $_table) {
                 foreach ($_table as $table) {
                     // check if $table has '-DEL-' in it
-                    if (strpos($table, '-DEL-') === true) {
+                    if (str_contains($table, '-DEL-')) {
                         // get the date from the table name
                         $date = explode('-DEL-', $table)[1];
 
