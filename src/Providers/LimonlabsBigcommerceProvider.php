@@ -42,6 +42,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('limonadmin.auth', \Limonlabs\Bigcommerce\Middleware\LimonAdminAuth::class);
         $this->app['router']->aliasMiddleware('limonadmin.guest', \Limonlabs\Bigcommerce\Middleware\LimonAdminGuest::class);
         $this->app['router']->aliasMiddleware('welcome.auth', \Limonlabs\Bigcommerce\Middleware\WelcomeAuth::class);
+        $this->app['router']->aliasMiddleware('admin.or.store.auth', \Limonlabs\Bigcommerce\Middleware\AdminOrStoreAuth::class);
 
         $this->app['router']->aliasMiddleware('adminer', \Illuminate\Cookie\Middleware\EncryptCookies::class);
         $this->app['router']->pushMiddlewareToGroup('adminer', \Illuminate\Session\Middleware\StartSession::class);
