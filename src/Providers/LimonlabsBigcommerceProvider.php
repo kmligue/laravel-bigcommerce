@@ -12,6 +12,10 @@ use Psr\Log\LoggerInterface;
 use Laravel\Cashier\Events\WebhookReceived;
 use Limonlabs\Bigcommerce\Mail\Admin\NewSitePaidPlan;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Http\Client\Events\RequestSending;
+use Illuminate\Http\Client\Events\ResponseReceived;
+use Illuminate\Http\Client\Events\ConnectionFailed;
+use Illuminate\Support\Facades\Log;
 
 class LimonlabsBigcommerceProvider extends ServiceProvider
 {
@@ -126,5 +130,45 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 }
             }
         });
+
+        $loggingEnabled = config('bigcommerce.enable_logging', false);
+
+        if ($loggingEnabled) {
+            // Log outgoing requests
+            $this->app['events']->listen(RequestSending::class, function (RequestSending $event) {
+                $url = (string) $event->request->url();
+                if (str_contains($url, 'bigcommerce.com')) {
+                    Log::channel('bigcommerce')->info('BigCommerce Request', [
+                        'url' => $url,
+                        'method' => $event->request->method(),
+                        'body' => $event->request->body(),
+                        'headers' => $event->request->headers(),
+                    ]);
+                }
+            });
+
+            // Log incoming responses
+            $this->app['events']->listen(ResponseReceived::class, function (ResponseReceived $event) {
+                $url = (string) $event->request->url();
+                if (str_contains($url, 'bigcommerce.com')) {
+                    Log::channel('bigcommerce')->info('BigCommerce Response', [
+                        'url' => $url,
+                        'status' => $event->response->status(),
+                        'body' => $event->response->body(),
+                    ]);
+                }
+            });
+
+            // Log on connection failure
+            $this->app['events']->listen(ConnectionFailed::class, function (ConnectionFailed $event) {
+                $url = (string) $event->request->url();
+                if (str_contains($url, 'bigcommerce.com')) {
+                    Log::channel('bigcommerce')->error('BigCommerce Connection Failed', [
+                        'url' => $url,
+                        'error' => $event->exception->getMessage(),
+                    ]);
+                }
+            });
+        }
     }
 }
