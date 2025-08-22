@@ -21,7 +21,8 @@
         "sendgrid/sendgrid": "~7",
         "onecentlin/laravel-adminer": "^7.0",
         "symfony/mailer": "^7.2",
-        "symfony/http-client": "^7.2"
+        "symfony/http-client": "^7.2",
+        "laravel/telescope": "^5.0"
     },
     "extra": {
         "laravel": {

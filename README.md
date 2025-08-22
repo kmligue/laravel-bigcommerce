@@ -1,67 +1,115 @@
-# Installation
-&bullet; Add into composer.json
-```
-...
+# Laravel BigCommerce Package
+
+A comprehensive Laravel package for BigCommerce integration with multi-tenancy support, subscription management, and advanced monitoring capabilities.
+
+## 🚀 Features
+
+- **BigCommerce API Integration** - Complete API client with authentication
+- **Multi-tenancy Support** - Isolated database per store with automatic table creation
+- **Subscription Management** - Stripe integration with plan-based access control
+- **Webhook Processing** - Automated webhook handling and processing
+- **Laravel Telescope Integration** - Comprehensive debugging and monitoring
+- **Advanced User Management** - Role-based access control and trial management
+- **Mail Notifications** - Automated email notifications for various events
+
+## 📦 Installation
+
+### 1. Add Repository to Composer
+
+Add this to your `composer.json`:
+
+```json
 "repositories": [
     {
         "type": "vcs",
         "url": "https://github.com/kmligue/laravel-bigcommerce"
     }
-],
-...
+]
 ```
-&bullet; Run composer require command
-```
+
+### 2. Install Package
+
+```bash
 composer require limonlabs/bigcommerce:dev-multitenancy2
 ```
-&bullet; Publish config and migrations
-```
+
+### 3. Publish Configuration and Migrations
+
+```bash
+# Publish all package files
+php artisan vendor:publish --tag=limonlabs-bigcommerce-config
 php artisan vendor:publish --tag=limonlabs-bigcommerce-migrations
-php artisan vendor:publish --tag=limonlabs-bigcommerce-config
-php artisan vendor:publish --tag=limonlabs-bigcommerce-config
 
-or
-
-You can publish all by using the command "php artisan vendor:publish" and select "Limonlabs\Bigcommerce\Providers\LimonlabsBigcommerceProvider" from the list
+# Or publish everything at once
+php artisan vendor:publish
+# Then select "Limonlabs\Bigcommerce\Providers\LimonlabsBigcommerceProvider"
 ```
 
-&bullet; Register **StartSession** middleware. (https://dev.to/abdulwahidkahar/how-to-fix-session-store-not-set-on-request-laravel-11-2d4p)
-```
+### 4. Configure Session Middleware
+
+For Laravel 11, add the StartSession middleware to your `bootstrap/app.php`:
+
+```php
 use Illuminate\Session\Middleware\StartSession;
 
-...
 ->withMiddleware(function (Middleware $middleware) {
     $middleware->append(StartSession::class);
 })
-...
 ```
 
-&bullet; set .env SESSION_DRIVER=file
+### 5. Set Environment Variables
 
-by default this is set to "database". we will set it to "file" so that we will not anymore migrate session table.
+```env
+# Session configuration
+SESSION_DRIVER=file
 
+# BigCommerce API credentials
+BC_APP_ID=your_app_id
+BC_LOCAL_CLIENT_ID=your_local_client_id
+BC_APP_CLIENT_ID=your_app_client_id
+BC_LOCAL_SECRET=your_local_secret
+BC_APP_SECRET=your_app_secret
+BC_LOCAL_ACCESS_TOKEN=your_local_access_token
+BC_LOCAL_STORE_HASH=your_local_store_hash
 
-# Notes
-&bullet; We have a default StoreInfo model that looks like this:
+# Stripe configuration
+STRIPE_KEY=pk_test_your_stripe_key
+STRIPE_SECRET=sk_test_your_stripe_secret
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Plan-specific Stripe price IDs
+STRIPE_BRONZE_PLAN_ID=price_your_bronze_plan
+STRIPE_SILVER_PLAN_ID=price_your_silver_plan
+STRIPE_GOLD_PLAN_ID=price_your_gold_plan
+
+# Mail configuration
+MAIL_FROM_ADDRESS=support@limonlabs.dev
+MAIL_FROM_NAME="[STAGING] Limon Labs Support"
+MAIL_SUBJECT_PREFIX="[STAGING]"
+ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
+
+# Help form (StaticForms)
+STATICFORMS_ACCESS_KEY=your_staticforms_key
 ```
+
+## 🔧 Configuration
+
+### Default StoreInfo Model
+
+The package provides a default `StoreInfo` model with the following structure:
+
+```php
 <?php
 
 namespace Limonlabs\Bigcommerce\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laravel\Cashier\Billable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
+use Laravel\Cashier\Billable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Stripe\StripeClient;
-use Illuminate\Support\Facades\Log;
 
 class StoreInfo extends Authenticatable
 {
-    use HasFactory, Billable, SoftDeletes;
+    use Billable, SoftDeletes;
 
     protected $table = 'store_info';
 
@@ -92,292 +140,43 @@ class StoreInfo extends Authenticatable
         'trial_ends_at' => 'datetime'
     ];
 
+    // Relationships
     public function webhooks() {
         return $this->hasMany(\Limonlabs\Bigcommerce\Models\Webhook::class, 'store_id');
     }
 
-    public function getPlanAttribute() {
-        $plans = Config::get('plans');
-        $_plan = [];
-        
-        // Check if user is on trial
-        if ($this->onTrial()) {
-            // If user has advanced access during trial, return the highest plan
-            if ($this->has_advanced_during_trial ?? false) {
-                // Find the highest plan by sorting
-                $plansCopy = $plans;
-                uasort($plansCopy, function($a, $b) {
-                    return ($b['price'] ?? 0) <=> ($a['price'] ?? 0);
-                });
-                
-                // Get the highest plan
-                $highestPlanKey = array_key_first($plansCopy);
-                return $plansCopy[$highestPlanKey] ?? [];
-            }
-            
-            // If user has a specified post-trial plan during trial
-            if ($this->post_trial_plan && isset($plans[$this->post_trial_plan])) {
-                return $plans[$this->post_trial_plan];
-            }
-        }
-        
-        // Check subscribed plans
-        if ($this->subscribed('default')) {
-            $subscription = $this->subscription('default');
-            $stripePriceId = $subscription->stripe_price;
-            
-            // Get the product ID from the subscription items table
-            $stripeProductId = null;
-            $subscriptionItem = DB::table('subscription_items')
-                ->where('subscription_id', $subscription->id)
-                ->first();
-                
-            if ($subscriptionItem && isset($subscriptionItem->stripe_product)) {
-                $stripeProductId = $subscriptionItem->stripe_product;
-            }
-            
-            foreach ($plans as $key => $plan) {
-                if (isset($plan['plan_id'])) {
-                    $planId = $plan['plan_id'];
-                    
-                    // Direct match with price ID
-                    if ($planId === $stripePriceId) {
-                        $_plan = $plan;
-                        break;
-                    }
-                    
-                    // Match with product ID (if we have it)
-                    if ($stripeProductId && $planId === $stripeProductId) {
-                        $_plan = $plan;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Fall back to free plan if no subscription found
-        if (empty($_plan) && isset($plans['free'])) {
-            $_plan = $plans['free'];
-        }
-
-        return $_plan;
-    }
-
-    public function getChannelsAttribute() {
-        $channels = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-            'X-Auth-Token' => $this->access_token
-        ])->get('https://api.bigcommerce.com/' . $this->store_hash . '/v3/channels');
-        
-        if ($channels->successful()) {
-            $json = $channels->json();
-
-            if (isset($json['data'])) {
-                return $json['data'];
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Get the user's current plan status
-     *
-     * @return array Contains plan information and trial status
-     */
-    public function getPlanStatus()
-    {
-        $result = [
-            'is_subscribed' => false,
-            'is_on_trial' => false,
-            'current_plan' => null,
-            'trial_ends_at' => null,
-            'plan_details' => null,
-            'has_advanced_during_trial' => $this->has_advanced_during_trial ?? false,
-            'post_trial_plan' => $this->post_trial_plan ?? null,
-        ];
-
-        // Check if user is on trial
-        if ($this->onTrial()) {
-            $result['is_on_trial'] = true;
-            $result['trial_ends_at'] = $this->trial_ends_at;
-            
-            // If user has advanced access during trial, set their current plan
-            // to the highest plan or a specific trial plan
-            if ($this->has_advanced_during_trial ?? false) {
-                $plans = config('plans');
-                // Find the highest plan by sorting
-                uasort($plans, function($a, $b) {
-                    return ($b['price'] ?? 0) <=> ($a['price'] ?? 0);
-                });
-                
-                // Get the highest plan key (first after sorting)
-                $highestPlanKey = array_key_first($plans);
-                $result['current_plan'] = $highestPlanKey; // Typically 'gold' based on your config
-                $result['plan_details'] = $plans[$highestPlanKey];
-            }
-        } 
-        // Check if user has an active subscription
-        elseif ($this->subscribed('default')) {
-            $result['is_subscribed'] = true;
-            
-            $subscription = $this->subscription('default');
-            $stripePriceId = $subscription->stripe_price;
-            
-            // Get the product ID from the subscription items table
-            $stripeProductId = null;
-            $subscriptionItem = DB::table('subscription_items')
-                ->where('subscription_id', $subscription->id)
-                ->first();
-                
-            if ($subscriptionItem && isset($subscriptionItem->stripe_product)) {
-                $stripeProductId = $subscriptionItem->stripe_product;
-            }
-            
-            // Match the stripe_price or stripe_product to a plan in the config
-            $plans = config('plans');
-            foreach ($plans as $planKey => $planDetails) {
-                if (isset($planDetails['plan_id'])) {
-                    $planId = $planDetails['plan_id'];
-                    
-                    // Direct match with price ID
-                    if ($planId === $stripePriceId) {
-                        $result['current_plan'] = $planKey;
-                        $result['plan_details'] = $planDetails;
-                        break;
-                    }
-                    
-                    // Match with product ID (if we have it)
-                    if ($stripeProductId && $planId === $stripeProductId) {
-                        $result['current_plan'] = $planKey;
-                        $result['plan_details'] = $planDetails;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return $result;
-    }
-
-    /**
-     * Check if user has access to a specific plan's features
-     *
-     * @param string $planKey The plan key to check access for (e.g., 'bronze', 'silver', 'gold')
-     * @return bool Whether user has access to the specified plan's features
-     */
-    public function hasPlanAccess($planKey)
-    {
-        $status = $this->getPlanStatus();
-        
-        // If not subscribed and not on trial, no access
-        if (!$status['is_subscribed'] && !$status['is_on_trial']) {
-            return false;
-        }
-        
-        $plans = config('plans');
-        
-        // If the requested plan doesn't exist in our config, deny access
-        if (!isset($plans[$planKey])) {
-            return false;
-        }
-        
-        // Get the requested plan's price/level
-        $requestedPlanPrice = $plans[$planKey]['price'] ?? PHP_INT_MAX;
-        
-        // If user is on trial with advanced access
-        if ($status['is_on_trial'] && $status['has_advanced_during_trial']) {
-            // During trial with advanced access, give access to all plans
-            return true;
-        }
-        
-        // If user is subscribed to a plan
-        if ($status['is_subscribed'] && isset($status['current_plan'])) {
-            $currentPlanPrice = $plans[$status['current_plan']]['price'] ?? 0;
-            
-            // User has access if their plan price is >= the requested plan price
-            return $currentPlanPrice >= $requestedPlanPrice;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Get all features the user has access to
-     *
-     * @return array Array of feature strings the user has access to
-     */
-    public function getAccessibleFeatures()
-    {
-        $status = $this->getPlanStatus();
-        $allFeatures = [];
-        $plans = config('plans');
-        
-        // If on trial with advanced access, merge all features
-        if ($status['is_on_trial'] && $status['has_advanced_during_trial']) {
-            foreach ($plans as $plan) {
-                if (isset($plan['features']) && is_array($plan['features'])) {
-                    $allFeatures = array_merge($allFeatures, $plan['features']);
-                }
-            }
-        } 
-        // If subscribed, get features of current plan and lower tiers
-        elseif ($status['is_subscribed'] && isset($status['current_plan'])) {
-            $currentPlanPrice = $plans[$status['current_plan']]['price'] ?? 0;
-            
-            foreach ($plans as $plan) {
-                if (isset($plan['price']) && $plan['price'] <= $currentPlanPrice) {
-                    if (isset($plan['features']) && is_array($plan['features'])) {
-                        $allFeatures = array_merge($allFeatures, $plan['features']);
-                    }
-                }
-            }
-        }
-        
-        // Remove duplicate features
-        return array_unique($allFeatures);
-    }
-
-    protected static function booted()
-    {
-        static::created(function ($storeInfo) {
-            $oldPrefix = Config::get('database.connections.tenant.prefix');
-            $prefix = $oldPrefix;
-
-            if (!empty($prefix)) {
-                $prefix = $prefix . '_' . str_replace('stores/', '', $storeInfo->store_hash) . '_';
-            } else {
-                $prefix = str_replace('stores/', '', $storeInfo->store_hash) . '_';
-            }
-
-            DB::setTablePrefix($prefix);
-
-            Artisan::call('migrate', ['--path' => 'database/migrations/tenant', '--force' => true]);
-
-            DB::setTablePrefix($oldPrefix);
-        });
-    }
+    // Plan management methods
+    public function getPlanAttribute() { /* ... */ }
+    public function getChannelsAttribute() { /* ... */ }
+    public function getPlanStatus() { /* ... */ }
+    public function hasPlanAccess($planKey) { /* ... */ }
+    public function getAccessibleFeatures() { /* ... */ }
 }
 ```
-You can override this one in config/tenant.php
-```
-'tenant' => \Limonlabs\Bigcommerce\Models\StoreInfo::class,
-```
-&bullet; All tenant tables should use the trait ```TenantConnection```
 
-Example:
+### Customizing the Model
+
+You can override the default model in `config/tenant.php`:
+
+```php
+'tenant' => \App\Models\YourCustomStoreInfo::class,
 ```
+
+### Tenant Tables
+
+All tenant-specific tables should use the `TenantConnection` trait:
+
+```php
+<?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Limonlabs\Bigcommerce\Database\Traits\TenantConnection;
 
 class Feedback extends Model
 {
-    use HasFactory, SoftDeletes, TenantConnection;
+    use TenantConnection;
 
     protected $table = 'feedbacks';
 
@@ -390,53 +189,197 @@ class Feedback extends Model
         'user_agent',
         'sentiment'
     ];
-
-    protected $casts = [
-        'user_agent' => 'array',
-    ];
 }
 ```
-# Stripe Keys
-&bullet; Set stripe credentials in .env file. Don't also forget to set the stripe price id's for the plans.
-```
-STRIPE_KEY=pk_test_nJQKMa1qyBWYURVUZC15LmVB
-STRIPE_SECRET=sk_test_D1uu9XXITIS9htvBNeA8xNjt
-STRIPE_WEBHOOK_SECRET=whsec_yqfXz53AZWuA1HwJRyIcVyxMO4uxUMKK
 
-STRIPE_BRONZE_PLAN_ID=price_1Qu23jDp8CuNIE4Gtp135KEP
-STRIPE_SILVER_PLAN_ID=price_1Qu246Dp8CuNIE4GcG216veP
-STRIPE_GOLD_PLAN_ID=price_1Qu24HDp8CuNIE4GbY3U4mCF
-```
-# Help Form
-&bullet; Form uses https://www.staticforms.xyz/. Add the api key in .env file.
-```
-STATICFORMS_ACCESS_KEY=b9c3f48b-3e4e-4d60-8295-cb7211501eec
+## 🔍 Laravel Telescope Integration
+
+This package includes comprehensive Laravel Telescope integration for debugging and monitoring BigCommerce operations.
+
+### Quick Installation
+
+```bash
+# Install Laravel Telescope first
+composer require laravel/telescope
+
+# Install BigCommerce Telescope integration
+php artisan bigcommerce:install-telescope
 ```
 
-# Mail Settings
+### What It Monitors
+
+- **BigCommerce API Operations**: All API requests, responses, and errors
+- **Database Operations**: Comprehensive query monitoring and performance tracking
+- **Webhook Processing**: Webhook reception, processing, and failures
+- **Subscription Management**: Plan changes, cancellations, and billing events
+- **Store Lifecycle**: Installation, uninstallation, and configuration changes
+
+### Configuration
+
+Add to your `.env` file:
+
+```env
+# Enable Telescope
+TELESCOPE_ENABLED=true
+BIGCOMMERCE_ENABLE_TELESCOPE=true
+
+# BigCommerce specific watchers
+TELESCOPE_BIGCOMMERCE_WATCHER=true
+TELESCOPE_BIGCOMMERCE_DB_WATCHER=true
+
+# Database monitoring
+TELESCOPE_LOG_ALL_QUERIES=true
+TELESCOPE_LOG_SLOW_QUERIES=true
+TELESCOPE_QUERY_SLOW=100
 ```
+
+### Access Dashboard
+
+Visit `/telescope` in your browser to access the monitoring dashboard.
+
+### Documentation
+
+For detailed Telescope integration documentation, see [TELESCOPE_README.md](TELESCOPE_README.md).
+
+## 🗄️ Database Management
+
+### Automatic Tenant Table Creation
+
+When a new store is created, the package automatically:
+
+1. Creates a unique database prefix for the store
+2. Runs tenant-specific migrations
+3. Sets up isolated table structure
+
+### Cleanup Old Tenant Tables
+
+Delete tenant tables that are over 30 days old:
+
+```bash
+php artisan delete:old-tenant-tables
+```
+
+Add to your cron job:
+
+```bash
+php artisan schedule:run >> /dev/null 2>&1
+```
+
+## 📧 Mail Configuration
+
+The package includes automated email notifications:
+
+- **App Installation/Uninstallation** - Notify admins of store changes
+- **Help Requests** - Process and forward user support requests
+- **Subscription Changes** - Notify users of plan modifications
+
+### Mail Settings
+
+```env
 MAIL_FROM_ADDRESS=support@limonlabs.dev
 MAIL_FROM_NAME="[STAGING] Limon Labs Support"
 MAIL_SUBJECT_PREFIX="[STAGING]"
 ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
 ```
 
-&bullet; **MAIL_FROM_ADDRESS** defaults to support@limonlabs.dev.
+**Note**: 
+- Use `[STAGING]` prefix for development environments
+- Remove prefix for production
+- Default admin emails are `dev@limonlabs.dev` and `support@limonlabs.dev`
 
-&bullet; **MAIL_FROM_NAME** prefix [STAGING] for development.
+## 🎨 Publishing Assets
 
-&bullet; **MAIL_SUBJECT_PREFIX** put [STAGING] if development. Set empty for production.
+### Images and Logos
 
-&bullet; **ADMIN_MAIL_FROM_ADDRESS** default to dev@limonlabs.dev,support@limonlabs.dev.
-
-# Cron Job
-Delete tenant tables that are over 30 days old
-```
-php artisan delete:old-tenant-tables
-php artisan schedule:run >> /dev/null 2>&1
-```
-
-# Publish images
-```
+```bash
 php artisan vendor:publish --tag=limonlabs-bigcommerce-images
 ```
+
+## 🔐 Security Features
+
+- **API Key Protection** - Automatic redaction of sensitive data in logs
+- **Multi-tenant Isolation** - Complete database separation between stores
+- **Access Control** - Plan-based feature access with trial management
+- **Secure Webhooks** - Validated webhook processing with signature verification
+
+## 🚀 Advanced Features
+
+### Trial Management
+
+- **Advanced Trial Access** - Grant premium features during trial periods
+- **Post-trial Plans** - Specify default plan after trial expiration
+- **Flexible Trial Extensions** - Customizable trial periods and conditions
+
+### Plan-based Access Control
+
+```php
+// Check if user has access to specific plan features
+if ($storeInfo->hasPlanAccess('gold')) {
+    // Enable premium features
+}
+
+// Get all accessible features
+$features = $storeInfo->getAccessibleFeatures();
+```
+
+### BigCommerce API Integration
+
+```php
+// Get store channels
+$channels = $storeInfo->channels;
+
+// Access BigCommerce API client
+$client = app(\Limonlabs\Bigcommerce\Libraries\Bigcommerce\BcClient::class);
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+1. **Session Store Not Set**
+   - Ensure `StartSession` middleware is configured
+   - Set `SESSION_DRIVER=file` in `.env`
+
+2. **Tenant Tables Not Created**
+   - Check database permissions
+   - Verify migration files are published
+   - Run `php artisan migrate:status` to check migration status
+
+3. **Telescope Not Working**
+   - Verify `TELESCOPE_ENABLED=true`
+   - Check `BIGCOMMERCE_ENABLE_TELESCOPE=true`
+   - Ensure Laravel Telescope is installed
+
+### Debug Commands
+
+```bash
+# Check package status
+php artisan bigcommerce:status
+
+# Clear package cache
+php artisan config:clear
+php artisan cache:clear
+
+# Check Telescope status
+php artisan telescope:status
+```
+
+## 📚 Additional Resources
+
+- [Laravel Telescope Documentation](https://laravel.com/docs/telescope)
+- [BigCommerce API Documentation](https://developer.bigcommerce.com/)
+- [Laravel Package Development](https://laravel.com/docs/packages)
+- [Package Repository](https://github.com/kmligue/laravel-bigcommerce)
+
+## 🤝 Support
+
+For issues and support:
+
+1. Check the troubleshooting section above
+2. Review package configuration
+3. Check environment variables
+4. Contact package maintainers
+
+## 📄 License
+
+This package is open-sourced software licensed under the [MIT license](LICENSE).

@@ -31,6 +31,13 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
 
         // Register your schedule service provider
         $this->app->register(ScheduleServiceProvider::class);
+        
+        // Conditionally register Telescope if enabled
+        if (config('bigcommerce.enable_telescope', false)) {
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            
+
+        }
     }
 
     /**
@@ -58,6 +65,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 \Limonlabs\Bigcommerce\Commands\TenantMigration::class,
                 \Limonlabs\Bigcommerce\Commands\DeleteOldTenantTables::class,
                 \Limonlabs\Bigcommerce\Commands\HandleExpiredTrials::class,
+                \Limonlabs\Bigcommerce\Commands\InstallTelescope::class,
             ]);
         }
 
@@ -83,6 +91,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 __DIR__.'/../config/webhooks.php' => config_path('webhooks.php'),
                 __DIR__.'/../config/tenant.php' => config_path('tenant.php'),
                 __DIR__.'/../config/limonadmin.php' => config_path('limonadmin.php'),
+                __DIR__.'/../config/telescope.php' => config_path('telescope.php'),
             ],
         'limonlabs-bigcommerce-config');
 
@@ -102,6 +111,11 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/services-stripe.php', 'services');
         $this->mergeConfigFrom(__DIR__.'/../config/services-bigcommerce.php', 'services');
         $this->mergeConfigFrom(__DIR__.'/../config/logging-bigcommerce.php', 'logging.channels');
+        
+        // Merge Telescope configuration if enabled
+        if (config('bigcommerce.enable_telescope', false)) {
+            $this->mergeConfigFrom(__DIR__.'/../config/telescope.php', 'telescope');
+        }
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
 

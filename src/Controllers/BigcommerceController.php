@@ -128,7 +128,7 @@ class BigcommerceController
                         'country' => $store_data['country'],
                         'plan_level' => $store_data['plan_level'],
                         'multi_storefront_enabled' => $store_data['features']['multi_storefront_enabled'],
-                        'trial_ends_at' => now()->addDays(14),
+                        'trial_ends_at' => $this->getTrialEndDate($data['user']['email']),
                         'has_advanced_during_trial' => true,
                         'post_trial_plan' => get_lowest_available_plan()
                     ]);
@@ -499,5 +499,22 @@ class BigcommerceController
                 ]);
             }
         }
+    }
+
+    /**
+     * Get the trial end date based on user email domain
+     * 
+     * @param string $email
+     * @return \Carbon\Carbon
+     */
+    protected function getTrialEndDate($email)
+    {
+        $domain = strtolower(trim(substr(strrchr($email, '@'), 1)));
+        
+        if ($domain === 'bigcommerce.com') {
+            return now()->addDays(180);
+        }
+        
+        return now()->addDays(14);
     }
 }
