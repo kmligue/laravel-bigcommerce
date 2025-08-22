@@ -59,6 +59,12 @@ return [
         
         // Request watcher settings
         'request_size_limit' => env('TELESCOPE_REQUEST_SIZE_LIMIT', 64), // kilobytes
+        
+        // Security settings
+        'allowed_ips' => env('TELESCOPE_ALLOWED_IPS', ''), // Comma-separated IP addresses
+        'require_authentication' => env('TELESCOPE_REQUIRE_AUTH', true), // Require user authentication
+        'allowed_roles' => env('TELESCOPE_ALLOWED_ROLES', 'admin'), // Comma-separated roles
+        'allow_limonadmin' => env('TELESCOPE_ALLOW_LIMONADMIN', true), // Allow LimonAdmin users
     ],
 
     /*

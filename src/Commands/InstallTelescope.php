@@ -202,12 +202,13 @@ class InstallTelescope extends Command
         $updates = [];
 
         // Add Telescope configuration if not present
-        if (!str_contains($envContent, 'TELESCOPE_ENABLED')) {
-            $updates[] = 'TELESCOPE_ENABLED=true';
-        }
-
         if (!str_contains($envContent, 'BIGCOMMERCE_ENABLE_TELESCOPE')) {
             $updates[] = 'BIGCOMMERCE_ENABLE_TELESCOPE=true';
+        }
+
+        // Optional: Set TELESCOPE_ENABLED explicitly (defaults to BIGCOMMERCE_ENABLE_TELESCOPE)
+        if (!str_contains($envContent, 'TELESCOPE_ENABLED')) {
+            $updates[] = '# TELESCOPE_ENABLED=true  # Optional: Defaults to BIGCOMMERCE_ENABLE_TELESCOPE';
         }
 
         if (!str_contains($envContent, 'TELESCOPE_PATH')) {
@@ -234,6 +235,23 @@ class InstallTelescope extends Command
         // Add HTTP Client watcher for BigCommerce API monitoring
         if (!str_contains($envContent, 'TELESCOPE_HTTP_CLIENT_WATCHER')) {
             $updates[] = 'TELESCOPE_HTTP_CLIENT_WATCHER=true';
+        }
+
+        // Add Telescope security settings
+        if (!str_contains($envContent, 'TELESCOPE_ALLOWED_IPS')) {
+            $updates[] = 'TELESCOPE_ALLOWED_IPS=127.0.0.1,::1';
+        }
+
+        if (!str_contains($envContent, 'TELESCOPE_REQUIRE_AUTH')) {
+            $updates[] = 'TELESCOPE_REQUIRE_AUTH=true';
+        }
+
+        if (!str_contains($envContent, 'TELESCOPE_ALLOWED_ROLES')) {
+            $updates[] = 'TELESCOPE_ALLOWED_ROLES=admin';
+        }
+
+        if (!str_contains($envContent, 'TELESCOPE_ALLOW_LIMONADMIN')) {
+            $updates[] = 'TELESCOPE_ALLOW_LIMONADMIN=true';
         }
 
         if (!str_contains($envContent, 'TELESCOPE_QUERY_SLOW')) {

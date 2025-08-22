@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 use GuzzleHttp\Client;
 use Limonlabs\Bigcommerce\Mail\Transports\SendgridHttp;
 use Psr\Log\LoggerInterface;
@@ -115,6 +116,9 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         // Merge Telescope configuration if enabled
         if (config('bigcommerce.enable_telescope', false)) {
             $this->mergeConfigFrom(__DIR__.'/../config/telescope.php', 'telescope');
+            
+            // Set up Telescope authorization
+            $this->setupTelescopeAuthorization();
         }
 
         Cashier::useCustomerModel(Config::get('tenant.tenant'));
@@ -184,5 +188,22 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 }
             });
         }
+    }
+
+    /**
+     * Set up Telescope authorization for BigCommerce package
+     */
+    protected function setupTelescopeAuthorization()
+    {
+        // Only set up authorization if Telescope is available
+        if (!class_exists(\Laravel\Telescope\Telescope::class)) {
+            return;
+        }
+
+        // Override Telescope's default authorization
+        \Laravel\Telescope\Telescope::auth(function ($request) {
+            $authorizer = new \Limonlabs\Bigcommerce\Telescope\TelescopeAuthorization();
+            return $authorizer->authorize($request);
+        });
     }
 }

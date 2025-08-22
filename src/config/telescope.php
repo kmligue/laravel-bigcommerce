@@ -62,7 +62,7 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', false),
+    'enabled' => env('TELESCOPE_ENABLED', env('BIGCOMMERCE_ENABLE_TELESCOPE', false)),
 
     /*
     |--------------------------------------------------------------------------
@@ -77,7 +77,8 @@ return [
 
     'middleware' => [
         'web',
-        Authorize::class,
+        // Custom authorization handled by BigCommerce package
+        // Authorize::class, // Commented out - using custom auth
     ],
 
     /*

@@ -4,27 +4,32 @@ This document explains how to integrate and use Laravel Telescope with the Limon
 
 ## 🚀 Quick Start
 
-### 1. Install Laravel Telescope
-
-First, install Laravel Telescope in your Laravel application:
-
-```bash
-composer require laravel/telescope
-```
-
-### 2. Install BigCommerce Package Telescope Integration
-
-Run the installation command to set up Telescope for the BigCommerce package:
-
+### **1. Install Telescope Integration**
 ```bash
 php artisan bigcommerce:install-telescope
 ```
 
-This command will:
-- Publish Telescope configuration files
-- Run Telescope migrations
-- Configure BigCommerce-specific Telescope settings
-- Update your `.env` file with necessary configuration
+### **2. Access Telescope Dashboard**
+- **URL**: `/telescope`
+- **Access**: Automatically secured
+- **Local Development**: Always accessible
+- **Production**: Requires LimonAdmin authentication
+
+### **3. Configuration (Automatic)**
+The command automatically sets up:
+- ✅ Environment variables
+- ✅ Security settings
+- ✅ HTTP Client monitoring
+- ✅ Database monitoring
+- ✅ BigCommerce-specific watchers
+
+### **4. Ready to Use**
+- **BigCommerce API calls** automatically monitored
+- **Database operations** tracked with performance metrics
+- **Security** implemented with multi-layer protection
+- **LimonAdmin integration** seamless access
+
+> **Note**: Laravel Telescope is automatically installed as a dependency - no manual installation required!
 
 ## ⚙️ Configuration
 
@@ -33,9 +38,11 @@ This command will:
 Add these variables to your `.env` file:
 
 ```env
-# Enable Telescope
-TELESCOPE_ENABLED=true
+# BigCommerce Telescope Integration - Master Control
 BIGCOMMERCE_ENABLE_TELESCOPE=true
+
+# Telescope Core Settings (Optional - defaults to BIGCOMMERCE_ENABLE_TELESCOPE)
+# TELESCOPE_ENABLED=true  # Uncomment to override data collection behavior
 
 # Telescope Path (optional)
 TELESCOPE_PATH=telescope
@@ -54,6 +61,12 @@ TELESCOPE_LOG_SLOW_QUERIES=true
 # HTTP Client monitoring (for BigCommerce API calls)
 TELESCOPE_HTTP_CLIENT_WATCHER=true
 
+# Telescope Security Settings
+TELESCOPE_ALLOWED_IPS=127.0.0.1,::1
+TELESCOPE_REQUIRE_AUTH=true
+TELESCOPE_ALLOWED_ROLES=admin
+TELESCOPE_ALLOW_LIMONADMIN=true
+
 # Standard Telescope Watchers
 TELESCOPE_QUERY_WATCHER=true
 TELESCOPE_MODEL_WATCHER=true
@@ -66,6 +79,29 @@ TELESCOPE_EXCEPTION_WATCHER=true
 TELESCOPE_QUERY_SLOW=100
 TELESCOPE_REQUEST_SIZE_LIMIT=64
 ```
+
+### Simplified Configuration Approach
+
+The BigCommerce package now uses a **single master control** for Telescope integration:
+
+#### **Primary Control Variable:**
+```env
+BIGCOMMERCE_ENABLE_TELESCOPE=true    # Master switch - enables everything
+```
+
+#### **Optional Override:**
+```env
+TELESCOPE_ENABLED=false              # Override data collection (advanced use)
+```
+
+#### **Configuration Scenarios:**
+
+| BIGCOMMERCE_ENABLE_TELESCOPE | TELESCOPE_ENABLED | Result |
+|------------------------------|-------------------|---------|
+| `true` | `true` (default) | ✅ Full Telescope functionality |
+| `true` | `false` | ⚠️ UI accessible, no data collection |
+| `false` | `true` | ❌ No Telescope (package not loaded) |
+| `false` | `false` | ❌ No Telescope (package not loaded) |
 
 ### BigCommerce Package Configuration
 
@@ -224,7 +260,35 @@ Each entry contains:
 
 ## 🛡️ Security Considerations
 
-### Sensitive Data Protection
+### **Multi-Layer Authorization System**
+
+The BigCommerce package implements a comprehensive security approach:
+
+#### **1. Environment-Based Access**
+- **Local/Development**: Always accessible for debugging
+- **Production**: Requires proper authentication
+
+#### **2. User Authentication**
+- **BigCommerce Store Owners**: Automatic access
+- **Admin Users**: Role-based access (`hasRole('admin')`)
+- **Permission-Based**: Custom permissions (`can('view-telescope')`)
+- **User ID 1**: Common admin pattern fallback
+
+#### **3. LimonAdmin Integration**
+- **Session-Based**: `session()->get('limonadmin') === true`
+- **Configurable**: `TELESCOPE_ALLOW_LIMONADMIN=true/false`
+- **Seamless Access**: When logged into LimonAdmin
+
+#### **4. IP Restrictions**
+- **Whitelist Approach**: `TELESCOPE_ALLOWED_IPS=127.0.0.1,::1`
+- **Corporate Networks**: Support for IP ranges
+- **Security**: Only specific IPs can access
+
+#### **5. Default Security Stance**
+- **Deny by Default**: Access denied unless explicitly allowed
+- **No Open Access**: Production environments are secure by default
+
+### **Sensitive Data Protection**
 
 The package automatically redacts sensitive information:
 
@@ -234,25 +298,22 @@ The package automatically redacts sensitive information:
 - Passwords and authentication data
 - Personal identifiable information
 
-### Environment Restrictions
+### **Environment Restrictions**
 
-Telescope should only be enabled in development and staging environments:
+Telescope is automatically controlled by the BigCommerce package:
 
 ```php
-// config/telescope.php
-'enabled' => env('TELESCOPE_ENABLED', false) && app()->environment(['local', 'staging']),
+// config/telescope.php (automatically managed)
+'enabled' => env('TELESCOPE_ENABLED', env('BIGCOMMERCE_ENABLE_TELESCOPE', false)),
 ```
 
-### Access Control
+### **Access Control**
 
-Implement proper access control in your User model:
+The package automatically handles access control - no need to implement custom methods:
 
 ```php
-public static function canViewTelescope($request): bool
-{
-    return app()->environment(['local', 'staging']) && 
-           $request->user()->hasRole('admin');
-}
+// ✅ Automatic - No need to implement
+// The package handles all authorization logic
 ```
 
 ## 🔧 Customization
@@ -342,8 +403,8 @@ php artisan telescope:prune
 ### Common Issues
 
 1. **Telescope Not Loading**
-   - Check if `TELESCOPE_ENABLED=true`
-   - Verify `BIGCOMMERCE_ENABLE_TELESCOPE=true`
+   - **Primary check**: Verify `BIGCOMMERCE_ENABLE_TELESCOPE=true`
+   - **Secondary check**: Check if `TELESCOPE_ENABLED` is set to `false` (overrides master setting)
    - Ensure Telescope package is installed
 
 2. **No BigCommerce Data**
