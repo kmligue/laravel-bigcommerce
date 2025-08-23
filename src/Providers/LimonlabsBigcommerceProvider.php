@@ -36,8 +36,6 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         // Conditionally register Telescope if enabled
         if (config('bigcommerce.enable_telescope', false)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            
-
         }
     }
 

@@ -78,7 +78,7 @@ return [
     'middleware' => [
         'web',
         // Custom authorization handled by BigCommerce package
-        // Authorize::class, // Commented out - using custom auth
+        Authorize::class,
     ],
 
     /*
