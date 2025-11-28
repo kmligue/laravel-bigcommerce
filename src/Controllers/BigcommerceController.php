@@ -463,7 +463,7 @@ class BigcommerceController
                         'auto_uninstall' => true,
                         'load_method' => 'default',
                         'location' => isset($style['location']) ? $style['location'] : 'head',
-                        'visibility' => 'all_pages',
+                        'visibility' => isset($style['visibility']) ? $style['visibility'] : 'all_pages',
                         'kind' => 'script_tag',
                         'consent_category' => 'essential',
                         'channel_id' => $channel['id']
@@ -491,7 +491,7 @@ class BigcommerceController
                         'auto_uninstall' => true,
                         'load_method' => 'default',
                         'location' => isset($script['location']) ? $script['location'] : 'footer',
-                        'visibility' => 'all_pages',
+                        'visibility' => isset($script['visibility']) ? $script['visibility'] : 'all_pages',
                         'kind' => 'src',
                         'consent_category' => 'essential',
                         'channel_id' => $channel['id']
