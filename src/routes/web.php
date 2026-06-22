@@ -1,6 +1,5 @@
 <?php
 
-use AWS\CRT\HTTP\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/error', function () {
@@ -23,38 +22,31 @@ Route::group(['prefix' => 'auth'], function () {
 Route::any('/bc-api/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'proxyBigCommerceAPIRequest'])
     ->where('endpoint', 'v2\/.*|v3\/.*');
 
-Route::middleware(['bigcommerce.store.auth', 'welcome.auth'])->group(function() {
-    Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\OverviewController::class, 'index']);
+Route::middleware(['bigcommerce.store.auth'])->group(function () {
+    Route::get('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
+});
 
-    Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'index']);
-    Route::post('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\HelpController::class, 'store']);
+Route::middleware(['bigcommerce.store.auth', 'welcome.auth'])->group(function () {
+    Route::get('stores/{storeHash}/overview', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
+    Route::get('stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
+    Route::get('stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
+    Route::get('stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
+    Route::get('stores/{storeHash}/billing/{plan}', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'store']);
 
-    Route::get('stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'index'])->name('billing');
-    Route::get('stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'history']);
-    Route::get('stores/{storeHash}/billing/{plan}', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'show']);
-
-    Route::get('stores/{storeHash}/expired', function() {
+    Route::get('stores/{storeHash}/expired', function () {
         $storeHash = 'stores/' . request()->route('storeHash');
 
         return view('limonlabs/bigcommerce::expired', compact('storeHash'));
     });
 });
 
-Route::middleware(['bigcommerce.store.auth'])->group(function() {
-    Route::get('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'index']);
-    Route::post('stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Controllers\WelcomeController::class, 'store']);
+Route::middleware(['limonadmin.guest'])->group(function () {
+    Route::get('limonadmin', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'admin']);
 });
 
-Route::middleware(['limonadmin.guest'])->group(function() {
-    Route::get('limonadmin', [\Limonlabs\Bigcommerce\Controllers\Admin\LimonAdminController::class, 'index']);
-    Route::post('limonadmin', [\Limonlabs\Bigcommerce\Controllers\Admin\LimonAdminController::class, 'store']);
-});
-
-Route::middleware(['limonadmin.auth'])->group(function() {
-    Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\Admin\InstallsController::class, 'index']);
-
-    Route::get('limonadmin/unified-billing', [\Limonlabs\Bigcommerce\Controllers\Admin\UnifiedBillingController::class, 'index']);
-    Route::post('limonadmin/unified-billing/create', [\Limonlabs\Bigcommerce\Controllers\Admin\UnifiedBillingController::class, 'store']);
+Route::middleware(['limonadmin.auth'])->group(function () {
+    Route::get('limonadmin/installs', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'admin']);
+    Route::get('limonadmin/unified-billing', [\Limonlabs\Bigcommerce\Controllers\SpaController::class, 'admin']);
 });
 
 Route::get('maintenance', [\Limonlabs\Bigcommerce\Controllers\Admin\MaintenanceController::class, 'index']);

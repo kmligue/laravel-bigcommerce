@@ -1,30 +1,11 @@
 @if (session('success'))
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
-        <p class="font-bold">Success</p>
-        <p>{{ session('success') }}</p>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+        {{ session('success') }}
     </div>
-
-    @php
-        session()->forget('success');
-    @endphp
 @endif
 
 @if (session('error'))
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-        <p class="font-bold">Error</p>
-        <p>{{ session('error') }}</p>
-    </div>
-
-    @php
-        session()->forget('error');
-    @endphp
-@endif
-
-@if (isset($errors) && $errors->any())
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-        <p class="font-bold">Error</p>
-        @foreach ($errors->all() as $error)
-            <p>{{ $error }}</p>
-        @endforeach
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        {{ session('error') }}
     </div>
 @endif

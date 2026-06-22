@@ -98,6 +98,10 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             __DIR__.'/../images' => public_path('images/limonlabs'),
         ], 'limonlabs-bigcommerce-images');
 
+        $this->publishes([
+            __DIR__.'/../../dist' => public_path('vendor/limonlabs/bigcommerce'),
+        ], 'limonlabs-bigcommerce-assets');
+
         $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
         $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');

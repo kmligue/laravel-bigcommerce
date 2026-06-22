@@ -39,6 +39,7 @@ composer require limonlabs/bigcommerce:dev-multitenancy2
 # Publish all package files
 php artisan vendor:publish --tag=limonlabs-bigcommerce-config
 php artisan vendor:publish --tag=limonlabs-bigcommerce-migrations
+php artisan vendor:publish --tag=limonlabs-bigcommerce-assets
 
 # Or publish everything at once
 php artisan vendor:publish
@@ -91,6 +92,60 @@ ADMIN_MAIL_FROM_ADDRESS=dev@limonlabs.dev,support@limonlabs.dev
 # Help form (StaticForms)
 STATICFORMS_ACCESS_KEY=your_staticforms_key
 ```
+
+## React Frontend
+
+Store and admin UI is a React SPA built with Vite, React Router, and Tailwind CSS. Blade is retained only for email templates, error/expired/maintenance pages, and the `uploads` consumer template.
+
+### Building assets (package developers)
+
+```bash
+cd packages/limonlabs/bigcommerce   # or vendor/limonlabs/bigcommerce
+npm install
+npm run build
+```
+
+Built files are output to `dist/` and should be committed. Consuming apps publish them to `public/vendor/limonlabs/bigcommerce`:
+
+```bash
+php artisan vendor:publish --tag=limonlabs-bigcommerce-assets
+```
+
+### Local frontend development
+
+```bash
+cd packages/limonlabs/bigcommerce
+npm run dev
+```
+
+Run the Laravel host app separately. After changing React code, run `npm run build` and re-publish assets (or symlink `dist/` into `public/vendor/limonlabs/bigcommerce`).
+
+### JSON API endpoints
+
+All API routes use the `web` middleware group (session + CSRF). Store routes use `bigcommerce.store.auth`; most also require `welcome.auth`.
+
+**Store**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/stores/{storeHash}/context` | Store layout data, plan status, trial notice |
+| POST | `/api/stores/{storeHash}/welcome` | Complete onboarding |
+| POST | `/api/stores/{storeHash}/help` | Submit help form |
+| GET | `/api/stores/{storeHash}/billing` | Pricing plans data |
+| GET | `/api/stores/{storeHash}/billing/history` | Invoice history |
+| GET | `/api/stores/{storeHash}/billing/{plan}/setup-intent` | Stripe setup intent for card entry |
+| POST | `/api/stores/{storeHash}/billing/cancel` | Cancel subscription |
+| POST | `/api/stores/{storeHash}/billing/trial/change` | Update trial end date |
+| POST | `/api/stores/{storeHash}/billing/{plan}/select` | Select or change plan |
+| POST | `/api/stores/{storeHash}/billing/{plan}` | Create subscription with payment method |
+
+**Admin**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/limonadmin/login` | Admin login |
+| GET | `/api/limonadmin/installs` | List installed stores |
+| POST | `/api/limonadmin/unified-billing/create` | Create unified billing checkout |
 
 ## 🔧 Configuration
 
