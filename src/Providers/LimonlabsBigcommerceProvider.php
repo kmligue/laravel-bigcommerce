@@ -113,6 +113,8 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             );
         }
 
+        $this->configureCors();
+
         $this->mergeConfigFrom(__DIR__.'/../config/limonadmin.php', 'limonadmin');
         $this->mergeConfigFrom(__DIR__.'/../config/mail-mailers.php', 'mail.mailers');
         $this->mergeConfigFrom(__DIR__.'/../config/services-stripe.php', 'services');
@@ -194,6 +196,33 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
                 }
             });
         }
+    }
+
+    /**
+     * Laravel's mergeConfigFrom() lets the framework default cors.php win for
+     * duplicate keys (allowed_origins: *), which breaks credentialed requests.
+     */
+    protected function configureCors(): void
+    {
+        $allowedOrigins = array_values(array_unique(array_filter(array_merge(
+            [config('tenant.frontend_url')],
+            array_map(
+                fn (string $origin) => rtrim(trim($origin), '/'),
+                array_filter(explode(',', (string) env('BIGCOMMERCE_FRONTEND_ALLOWED_ORIGINS', '')))
+            )
+        ))));
+
+        Config::set('cors.paths', array_values(array_unique(array_merge(
+            (array) config('cors.paths', []),
+            ['api/*']
+        ))));
+        Config::set('cors.allowed_methods', ['*']);
+        Config::set('cors.allowed_origins', $allowedOrigins);
+        Config::set('cors.allowed_origins_patterns', []);
+        Config::set('cors.allowed_headers', ['*']);
+        Config::set('cors.exposed_headers', []);
+        Config::set('cors.max_age', 0);
+        Config::set('cors.supports_credentials', true);
     }
 
     /**

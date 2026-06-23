@@ -65,8 +65,11 @@ SESSION_DRIVER=file
 SESSION_SAME_SITE=none
 SESSION_SECURE_COOKIE=true
 
-# Frontend SPA URL (required — where the React app is hosted)
-BIGCOMMERCE_FRONTEND_URL=https://app.yourapp.com
+# Frontend SPA URL (required — must exactly match your deployed frontend origin)
+BIGCOMMERCE_FRONTEND_URL=https://bigcommercefrontendreact.netlify.app
+
+# Optional extra allowed CORS origins (comma-separated), e.g. preview deploys
+# BIGCOMMERCE_FRONTEND_ALLOWED_ORIGINS=https://deploy-preview-123.netlify.app
 
 # BigCommerce API credentials
 BC_APP_ID=your_app_id
@@ -167,6 +170,8 @@ The app runs inside the BigCommerce admin iframe. Cross-origin API calls require
 
 - `SESSION_SAME_SITE=none` and `SESSION_SECURE_COOKIE=true` on Laravel
 - HTTPS on both API and frontend domains in production
+- `BIGCOMMERCE_FRONTEND_URL` must **exactly** match the browser origin of your deployed SPA (scheme + host, no trailing slash). Example: if Netlify serves `https://bigcommercefrontendreact.netlify.app`, use that — not a placeholder like `https://app.yourapp.com`.
+- After changing CORS or session env vars, run `php artisan config:clear` on the API server
 - Test in Chrome with third-party cookie restrictions enabled
 
 ### JSON API endpoints
@@ -453,6 +458,12 @@ $client = app(\Limonlabs\Bigcommerce\Libraries\Bigcommerce\BcClient::class);
    - Verify `TELESCOPE_ENABLED=true`
    - Check `BIGCOMMERCE_ENABLE_TELESCOPE=true`
    - Ensure Laravel Telescope is installed
+
+4. **CORS errors (`Access-Control-Allow-Origin` must not be `*`)**
+   - Set `BIGCOMMERCE_FRONTEND_URL` to your real frontend origin (e.g. `https://bigcommercefrontendreact.netlify.app`)
+   - Run `php artisan config:clear` after env changes
+   - Ensure `VITE_API_URL` on the frontend points at the Laravel API domain
+   - Set `VITE_STRIPE_KEY` on the frontend host (Netlify env vars) to fix Stripe errors
 
 ### Debug Commands
 
