@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])->group(function () {
-    Route::get('api/csrf-cookie', fn () => response()->noContent());
+    Route::get('api/csrf-cookie', fn () => response()->json(['csrf_token' => csrf_token()]));
 
     Route::get('api/bootstrap', function () {
         if (!auth('store_info')->check()) {

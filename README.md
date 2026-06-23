@@ -176,7 +176,7 @@ The app runs inside the BigCommerce admin iframe. Cross-origin API calls require
 
 ### JSON API endpoints
 
-All API routes use the `web` middleware group (session + CSRF). Call `GET /api/csrf-cookie` before the first POST to obtain the CSRF token. Store routes use `bigcommerce.store.auth`; most also require `welcome.auth`.
+All API routes use the `web` middleware group (session + CSRF). Call `GET /api/csrf-cookie` before the first POST — it returns `{ "csrf_token": "..." }` in the JSON body (the frontend cannot read API-domain cookies cross-origin). Store routes use `bigcommerce.store.auth`; most also require `welcome.auth`.
 
 **Store**
 
