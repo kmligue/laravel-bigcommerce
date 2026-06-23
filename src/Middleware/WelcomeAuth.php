@@ -23,7 +23,7 @@ class WelcomeAuth
         if ($store->internal_settings && isset($store->internal_settings['welcome']) && $store->internal_settings['welcome'] == 1) {
             return $next($request);
         } else {
-            return redirect('/' . $store->store_hash . '/welcome');
+            return redirect(frontend_url($store->store_hash . '/welcome'));
         }
     }
 }

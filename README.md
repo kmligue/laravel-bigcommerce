@@ -39,7 +39,6 @@ composer require limonlabs/bigcommerce:dev-multitenancy2
 # Publish all package files
 php artisan vendor:publish --tag=limonlabs-bigcommerce-config
 php artisan vendor:publish --tag=limonlabs-bigcommerce-migrations
-php artisan vendor:publish --tag=limonlabs-bigcommerce-assets
 
 # Or publish everything at once
 php artisan vendor:publish
@@ -61,8 +60,13 @@ use Illuminate\Session\Middleware\StartSession;
 ### 5. Set Environment Variables
 
 ```env
-# Session configuration
+# Session configuration (required for cross-origin frontend)
 SESSION_DRIVER=file
+SESSION_SAME_SITE=none
+SESSION_SECURE_COOKIE=true
+
+# Frontend SPA URL (required — where the React app is hosted)
+BIGCOMMERCE_FRONTEND_URL=https://app.yourapp.com
 
 # BigCommerce API credentials
 BC_APP_ID=your_app_id
@@ -95,34 +99,79 @@ STATICFORMS_ACCESS_KEY=your_staticforms_key
 
 ## React Frontend
 
-Store and admin UI is a React SPA built with Vite, React Router, and Tailwind CSS. Blade is retained only for email templates, error/expired/maintenance pages, and the `uploads` consumer template.
+Store and admin UI is a **standalone React SPA** in the `frontend/` folder, deployed separately from Laravel. Laravel serves only the API, auth callbacks (`/auth/load`, `/auth/install`), and Blade templates for emails, errors, and maintenance.
 
-### Building assets (package developers)
+### Architecture
+
+- **Laravel (API domain):** `https://api.yourapp.com` — BigCommerce Load URL, JSON API, sessions
+- **Frontend (app domain):** `https://app.yourapp.com` — React SPA, static assets
+
+After `/auth/load` creates a session on the API domain, Laravel redirects to the frontend URL. The React app calls the API cross-origin with cookies and CSRF.
+
+### Frontend environment (`frontend/.env`)
+
+```env
+VITE_API_URL=https://api.yourapp.com
+VITE_APP_NAME="Your App"
+VITE_STRIPE_KEY=pk_test_your_stripe_key
+```
+
+Copy from `frontend/.env.example` and adjust values.
+
+### Building for production
 
 ```bash
-cd packages/limonlabs/bigcommerce   # or vendor/limonlabs/bigcommerce
+cd packages/limonlabs/bigcommerce/frontend   # or vendor/limonlabs/bigcommerce/frontend
 npm install
 npm run build
 ```
 
-Built files are output to `dist/` and should be committed. Consuming apps publish them to `public/vendor/limonlabs/bigcommerce`:
+Deploy the `frontend/dist/` directory to your static host (S3 + CloudFront, Netlify, Vercel, nginx, etc.). Configure the host to rewrite all paths (`/stores/*`, `/limonadmin/*`) to `index.html`.
 
-```bash
-php artisan vendor:publish --tag=limonlabs-bigcommerce-assets
+**nginx example:**
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.html;
+}
 ```
 
-### Local frontend development
+### Local development
 
 ```bash
-cd packages/limonlabs/bigcommerce
+# Terminal 1 — Laravel API
+php artisan serve --port=8000
+
+# Terminal 2 — Frontend dev server
+cd packages/limonlabs/bigcommerce/frontend
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:8000
+npm install
 npm run dev
 ```
 
-Run the Laravel host app separately. After changing React code, run `npm run build` and re-publish assets (or symlink `dist/` into `public/vendor/limonlabs/bigcommerce`).
+Set `BIGCOMMERCE_FRONTEND_URL=http://localhost:5173` in the Laravel `.env` so post-auth redirects land on the Vite dev server.
+
+### BigCommerce app URLs
+
+| Setting | Value |
+|---------|-------|
+| Load URL | `https://api.yourapp.com/auth/load` (Laravel domain) |
+| Auth callback | `https://api.yourapp.com/auth/install` |
+
+Users land on the frontend after auth; do not point the Load URL at the frontend domain.
+
+### Cross-origin cookies (iframe)
+
+The app runs inside the BigCommerce admin iframe. Cross-origin API calls require:
+
+- `SESSION_SAME_SITE=none` and `SESSION_SECURE_COOKIE=true` on Laravel
+- HTTPS on both API and frontend domains in production
+- Test in Chrome with third-party cookie restrictions enabled
 
 ### JSON API endpoints
 
-All API routes use the `web` middleware group (session + CSRF). Store routes use `bigcommerce.store.auth`; most also require `welcome.auth`.
+All API routes use the `web` middleware group (session + CSRF). Call `GET /api/csrf-cookie` before the first POST to obtain the CSRF token. Store routes use `bigcommerce.store.auth`; most also require `welcome.auth`.
 
 **Store**
 

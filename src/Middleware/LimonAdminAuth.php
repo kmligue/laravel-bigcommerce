@@ -19,7 +19,7 @@ class LimonAdminAuth
     public function handle(Request $request, Closure $next)
     {
         if ($request->session()->get('limonadmin') !== true) {
-            return redirect('limonadmin');
+            return redirect(frontend_url('limonadmin'));
         }
 
         return $next($request);

@@ -251,7 +251,7 @@ class BigcommerceController
                 if ($store_info->internal_settings && isset($store_info->internal_settings['welcome']) && $store_info->internal_settings['welcome'] == 1) {
                     return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
                 } else {
-                    return redirect('/' . $storeHash . '/welcome');
+                    return redirect(frontend_url($storeHash . '/welcome'));
                 }
             } else {
                 return redirect($url);

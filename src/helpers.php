@@ -15,6 +15,19 @@ if (!function_exists('tenant_class')) {
     }
 }
 
+if (!function_exists('frontend_url')) {
+    function frontend_url(string $path = ''): string
+    {
+        $base = rtrim(config('tenant.frontend_url'), '/');
+
+        if ($path === '') {
+            return $base;
+        }
+
+        return $base . '/' . ltrim($path, '/');
+    }
+}
+
 if (!function_exists('get_install_redirect')) {
     function get_install_redirect($storeHash = '')
     {
@@ -28,7 +41,7 @@ if (!function_exists('get_install_redirect')) {
 
         $redirect = str_replace('{storeHash}', $storeHash, $redirect);
 
-        return $redirect;
+        return frontend_url($redirect);
     }
 }
 
@@ -45,7 +58,7 @@ if (!function_exists('get_load_redirect')) {
 
         $redirect = str_replace('{storeHash}', $storeHash, $redirect);
 
-        return $redirect;
+        return frontend_url($redirect);
     }
 }
 

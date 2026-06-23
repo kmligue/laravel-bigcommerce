@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['web'])->group(function () {
+    Route::get('api/csrf-cookie', fn () => response()->noContent());
+});
+
 Route::middleware(['web', 'bigcommerce.store.auth'])->group(function () {
     Route::post('api/stores/{storeHash}/welcome', [\Limonlabs\Bigcommerce\Http\Controllers\Api\WelcomeApiController::class, 'store']);
     Route::post('api/stores/{storeHash}/billing/cancel', [\Limonlabs\Bigcommerce\Controllers\BillingController::class, 'cancel']);

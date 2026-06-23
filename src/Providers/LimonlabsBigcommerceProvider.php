@@ -98,10 +98,7 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
             __DIR__.'/../images' => public_path('images/limonlabs'),
         ], 'limonlabs-bigcommerce-images');
 
-        $this->publishes([
-            __DIR__.'/../../dist' => public_path('vendor/limonlabs/bigcommerce'),
-        ], 'limonlabs-bigcommerce-assets');
-
+        $this->mergeConfigFrom(__DIR__.'/../config/cors.php', 'cors');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-guards.php', 'auth.guards');
         $this->mergeConfigFrom(__DIR__.'/../config/auth-providers.php', 'auth.providers');
         $this->mergeConfigFrom(__DIR__.'/../config/database.php', 'database.connections');
@@ -109,6 +106,13 @@ class LimonlabsBigcommerceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/adminer.php', 'adminer');
         $this->mergeConfigFrom(__DIR__.'/../config/mail.php', 'mail.from');
         $this->mergeConfigFrom(__DIR__.'/../config/tenant.php', 'tenant');
+
+        if (empty(config('tenant.frontend_url'))) {
+            throw new \RuntimeException(
+                'BIGCOMMERCE_FRONTEND_URL is required. Set it in your .env file to the URL where the frontend SPA is hosted.'
+            );
+        }
+
         $this->mergeConfigFrom(__DIR__.'/../config/limonadmin.php', 'limonadmin');
         $this->mergeConfigFrom(__DIR__.'/../config/mail-mailers.php', 'mail.mailers');
         $this->mergeConfigFrom(__DIR__.'/../config/services-stripe.php', 'services');

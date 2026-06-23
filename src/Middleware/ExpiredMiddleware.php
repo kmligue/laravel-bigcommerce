@@ -22,7 +22,7 @@ class ExpiredMiddleware
         $planStatus = $store->getPlanStatus();
 
         if (!$planStatus['is_on_trial'] && !$planStatus['is_subscribed'] && $planStatus['post_trial_plan'] != 'free') {
-            return redirect('/' . $store->store_hash . '/expired');
+            return redirect(frontend_url($store->store_hash . '/expired'));
         }
 
         return $next($request);

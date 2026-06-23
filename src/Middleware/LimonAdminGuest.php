@@ -19,7 +19,7 @@ class LimonAdminGuest
     public function handle(Request $request, Closure $next)
     {
         if ($request->session()->get('limonadmin') === true) {
-            return redirect('limonadmin/installs');
+            return redirect(frontend_url('limonadmin/installs'));
         }
 
         return $next($request);
