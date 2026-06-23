@@ -28,6 +28,83 @@ if (!function_exists('frontend_url')) {
     }
 }
 
+if (!function_exists('api_or_frontend_redirect')) {
+    /**
+     * Return JSON with a client-side redirect path for API requests, or an HTTP redirect for web.
+     */
+    function api_or_frontend_redirect(\Illuminate\Http\Request $request, string $storeHash, string $page)
+    {
+        if ($request->expectsJson() || $request->is('api/*')) {
+            $path = '/stores/' . store_hash_short($storeHash) . '/' . ltrim($page, '/');
+
+            return response()->json(['redirect' => $path], 403);
+        }
+
+        return redirect(store_frontend_url($storeHash, $page));
+    }
+}
+
+if (!function_exists('store_hash_short')) {
+    function store_hash_short(string $storeHash): string
+    {
+        return str_replace('stores/', '', $storeHash);
+    }
+}
+
+if (!function_exists('store_frontend_url')) {
+    function store_frontend_url(string $storeHash, string $path): string
+    {
+        return frontend_url('stores/' . store_hash_short($storeHash) . '/' . ltrim($path, '/'));
+    }
+}
+
+if (!function_exists('resolve_load_redirect_url')) {
+    /**
+     * Map a BigCommerce JWT url (or "/") to an absolute frontend URL.
+     */
+    function resolve_load_redirect_url(string $url, string $storeHash, array $params = [], $storeInfo = null): string
+    {
+        if ($storeInfo === null) {
+            $storeInfo = tenant_class()::where('store_hash', $storeHash)->first();
+        }
+
+        $url = $url === '' ? '/' : $url;
+        $frontendBase = rtrim(config('tenant.frontend_url'), '/');
+
+        if (str_starts_with($url, 'http')) {
+            $path = parse_url($url, PHP_URL_PATH) ?: '/';
+            $url = $path;
+        }
+
+        if ($url === '/') {
+            $welcomeComplete = $storeInfo
+                && isset($storeInfo->internal_settings['welcome'])
+                && $storeInfo->internal_settings['welcome'] == 1;
+
+            $target = $welcomeComplete
+                ? get_load_redirect($storeHash)
+                : store_frontend_url($storeHash, 'welcome');
+        } elseif (str_starts_with($url, $frontendBase)) {
+            $target = $url;
+        } elseif (str_starts_with($url, '/stores/')) {
+            $target = frontend_url(ltrim($url, '/'));
+        } elseif (str_starts_with($url, '/')) {
+            $segment = ltrim($url, '/');
+            $known = ['welcome', 'expired', 'overview', 'help', 'billing'];
+            $isKnown = in_array($segment, $known, true) || str_starts_with($segment, 'billing/');
+            $target = $isKnown ? store_frontend_url($storeHash, $segment) : get_load_redirect($storeHash);
+        } else {
+            $target = get_load_redirect($storeHash);
+        }
+
+        if (!empty($params)) {
+            $target .= (str_contains($target, '?') ? '&' : '?') . http_build_query($params);
+        }
+
+        return $target;
+    }
+}
+
 if (!function_exists('get_install_redirect')) {
     function get_install_redirect($storeHash = '')
     {

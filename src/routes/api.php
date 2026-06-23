@@ -4,6 +4,24 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])->group(function () {
     Route::get('api/csrf-cookie', fn () => response()->noContent());
+
+    Route::get('api/bootstrap', function () {
+        if (!auth('store_info')->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
+        $store = auth('store_info')->user();
+        $storeHashShort = store_hash_short($store->store_hash);
+        $welcomeComplete = $store->internal_settings
+            && isset($store->internal_settings['welcome'])
+            && $store->internal_settings['welcome'] == 1;
+
+        $path = $welcomeComplete
+            ? "/stores/{$storeHashShort}/overview"
+            : "/stores/{$storeHashShort}/welcome";
+
+        return response()->json(['redirect' => $path]);
+    });
 });
 
 Route::middleware(['web', 'bigcommerce.store.auth'])->group(function () {

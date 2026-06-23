@@ -169,7 +169,7 @@ class BigcommerceController
                 abort(404);
             }
 
-            return redirect(get_install_redirect($storeHash));
+            return redirect(resolve_load_redirect_url('/', $storeHash, [], $store_info));
         } catch (\RequestException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorMessage = "An error occurred.";
@@ -240,22 +240,13 @@ class BigcommerceController
             }
 
             // Note:: This is for apps that have app extension installed. If the app extension is not installed, then the app will redirect to the app's dashboard. We are using the jwtData['url'] to redirect to the app extension's dashboard.
-            // Remove params from the url
-            $url = $jwtData['url'];
+            $url = $jwtData['url'] ?? '/';
 
-            if (strpos($jwtData['url'], '?') !== false) {
-                $url = explode('?', $jwtData['url'])[0];
+            if (str_contains($url, '?')) {
+                $url = explode('?', $url)[0];
             }
 
-            if ($url == '/') {
-                if ($store_info->internal_settings && isset($store_info->internal_settings['welcome']) && $store_info->internal_settings['welcome'] == 1) {
-                    return redirect(get_load_redirect($storeHash) . '?' . http_build_query($params));
-                } else {
-                    return redirect(frontend_url($storeHash . '/welcome'));
-                }
-            } else {
-                return redirect($url);
-            }
+            return redirect(resolve_load_redirect_url($url, $storeHash, $params, $store_info));
         } else {
             return redirect('error')->with('error', 'Store not found.');
         }
