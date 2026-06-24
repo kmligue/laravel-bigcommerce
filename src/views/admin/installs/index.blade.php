@@ -194,6 +194,12 @@
                 @endforeach
             </tbody>
         </table>
+
+        @if ($stores->hasPages())
+            <div class="mt-4">
+                {{ $stores->withQueryString()->links() }}
+            </div>
+        @endif
     </div>
 @endsection
 
