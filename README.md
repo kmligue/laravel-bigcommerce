@@ -183,6 +183,8 @@ All API routes use the `web` middleware group (session + CSRF). Call `GET /api/c
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/stores/{storeHash}/context` | Store layout data, plan status, trial notice |
+| GET | `/api/stores/{storeHash}/settings` | Get all settings, or subset via `?keys=key1,key2` |
+| POST | `/api/stores/{storeHash}/settings` | Merge key-value pairs into store settings |
 | POST | `/api/stores/{storeHash}/welcome` | Complete onboarding |
 | POST | `/api/stores/{storeHash}/help` | Submit help form |
 | GET | `/api/stores/{storeHash}/billing` | Pricing plans data |
