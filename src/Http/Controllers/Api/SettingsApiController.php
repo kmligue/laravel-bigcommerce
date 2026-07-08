@@ -9,7 +9,7 @@ class SettingsApiController
 {
     public function index(Request $request, string $storeHash): JsonResponse
     {
-        $settings = tenant()->settings ?? [];
+        $settings = $this->settingsForResponse(tenant()->settings);
 
         $keys = $request->query('keys');
         if ($keys !== null && $keys !== '') {
@@ -30,7 +30,7 @@ class SettingsApiController
 
     public function store(Request $request, string $storeHash): JsonResponse
     {
-        $data = $request->all();
+        $data = $this->requestPayload($request);
 
         if ($data === [] || ! $this->isAssociativeArray($data)) {
             return response()->json([
@@ -39,13 +39,42 @@ class SettingsApiController
         }
 
         $tenant = tenant();
-        $current = $tenant->settings ?? [];
+        $current = $this->settingsForResponse($tenant->settings);
 
         $tenant->update([
             'settings' => array_merge($current, $data),
         ]);
 
         return response()->json($data);
+    }
+
+    /**
+     * Read only the JSON request body. BigcommerceStoreAuth merges `tenant`
+     * into the request input, which must not be persisted as a setting.
+     */
+    private function requestPayload(Request $request): array
+    {
+        $content = $request->getContent();
+
+        if ($content === '' || $content === false) {
+            return [];
+        }
+
+        $data = json_decode($content, true);
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $settings
+     * @return array<string, mixed>
+     */
+    private function settingsForResponse(?array $settings): array
+    {
+        $settings = $settings ?? [];
+        unset($settings['tenant']);
+
+        return $settings;
     }
 
     private function isAssociativeArray(array $data): bool
