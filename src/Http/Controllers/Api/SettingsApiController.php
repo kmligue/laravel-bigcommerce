@@ -38,11 +38,8 @@ class SettingsApiController
             ], 422);
         }
 
-        $tenant = tenant();
-        $current = $this->settingsForResponse($tenant->settings);
-
-        $tenant->update([
-            'settings' => array_merge($current, $data),
+        tenant()->update([
+            'settings' => $data,
         ]);
 
         return response()->json($data);
