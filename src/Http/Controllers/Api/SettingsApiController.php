@@ -43,6 +43,36 @@ class SettingsApiController
         ]);
     }
 
+    public function update(Request $request, string $storeHash, string $key): JsonResponse
+    {
+        $content = $request->getContent();
+
+        if ($content === '' || $content === false) {
+            return response()->json([
+                'message' => 'Request body must be a JSON value.',
+            ], 422);
+        }
+
+        $value = json_decode($content, true);
+
+        if ($value === null && strtolower(trim($content)) !== 'null') {
+            return response()->json([
+                'message' => 'Request body must be valid JSON.',
+            ], 422);
+        }
+
+        $settings = $this->settingsForResponse(tenant()->settings);
+        $settings[$key] = $value;
+
+        tenant()->update([
+            'settings' => $settings,
+        ]);
+
+        return response()->json([
+            $key => $value,
+        ]);
+    }
+
     public function store(Request $request, string $storeHash): JsonResponse
     {
         $data = $this->requestPayload($request);

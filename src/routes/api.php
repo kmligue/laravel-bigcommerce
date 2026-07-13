@@ -37,6 +37,7 @@ Route::middleware(['web', 'bigcommerce.store.auth', 'welcome.auth'])->group(func
     Route::get('api/stores/{storeHash}/settings', [\Limonlabs\Bigcommerce\Http\Controllers\Api\SettingsApiController::class, 'index']);
     Route::get('api/stores/{storeHash}/settings/{key}', [\Limonlabs\Bigcommerce\Http\Controllers\Api\SettingsApiController::class, 'show']);
     Route::post('api/stores/{storeHash}/settings', [\Limonlabs\Bigcommerce\Http\Controllers\Api\SettingsApiController::class, 'store']);
+    Route::post('api/stores/{storeHash}/settings/{key}', [\Limonlabs\Bigcommerce\Http\Controllers\Api\SettingsApiController::class, 'update']);
     Route::post('api/stores/{storeHash}/help', [\Limonlabs\Bigcommerce\Http\Controllers\Api\HelpApiController::class, 'store']);
     Route::get('api/stores/{storeHash}/billing', [\Limonlabs\Bigcommerce\Http\Controllers\Api\BillingApiController::class, 'index']);
     Route::get('api/stores/{storeHash}/billing/history', [\Limonlabs\Bigcommerce\Http\Controllers\Api\BillingApiController::class, 'history']);
