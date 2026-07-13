@@ -203,6 +203,36 @@ All API routes use the `web` middleware group (session + CSRF). Call `GET /api/c
 | GET | `/api/limonadmin/installs` | List installed stores |
 | POST | `/api/limonadmin/unified-billing/create` | Create unified billing checkout |
 
+### BigCommerce API proxy (`/bc-api`)
+
+The package exposes a generic passthrough for the BigCommerce v2/v3 REST APIs, so the frontend can look up store data (products, orders, customers, etc.) without shipping the store's access token to the browser:
+
+```
+ANY /bc-api/{endpoint}   where {endpoint} matches v2/* or v3/*
+```
+
+Handled by `BigcommerceController@proxyBigCommerceAPIRequest`. The request is forwarded to `https://api.bigcommerce.com/{store_hash}/{endpoint}` with the app's `X-Auth-Client` and the store's `X-Auth-Token` headers injected server-side. BigCommerce's response body and status code are returned unchanged with a `application/json` content type.
+
+**Examples**
+
+```
+GET /bc-api/v3/catalog/products     → GET https://api.bigcommerce.com/{store_hash}/v3/catalog/products
+GET /bc-api/v2/store                → GET https://api.bigcommerce.com/{store_hash}/v2/store.json
+PUT /bc-api/v3/catalog/products/42  → PUT with the request body forwarded
+```
+
+**Authentication**
+
+- **Production:** the store hash and access token are resolved from the session created by `GET /auth/load`, so the proxy only works for a browser that has an active store session (`user_id`/`store_hash` in session). There is no separate auth middleware on the route.
+- **Local:** `BC_LOCAL_STORE_HASH`, `BC_LOCAL_ACCESS_TOKEN`, and `BC_LOCAL_CLIENT_ID` from `.env` are used instead, so any local request works without a session.
+
+**Behavior and limitations**
+
+- v2 endpoints automatically get a `.json` suffix appended to normalize responses against the v3 API.
+- The request body is only forwarded for `PUT` requests; `POST` bodies are not passed through.
+- The query string is **not** forwarded to BigCommerce — only the path is proxied, so filters like `?limit=10` have no effect.
+- Only paths starting with `v2/` or `v3/` are accepted; anything else 404s.
+
 ## 🔧 Configuration
 
 ### Default StoreInfo Model

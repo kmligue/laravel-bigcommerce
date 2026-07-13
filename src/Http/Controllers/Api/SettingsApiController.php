@@ -28,6 +28,21 @@ class SettingsApiController
         return response()->json($settings);
     }
 
+    public function show(Request $request, string $storeHash, string $key): JsonResponse
+    {
+        $settings = $this->settingsForResponse(tenant()->settings);
+
+        if (! array_key_exists($key, $settings)) {
+            return response()->json([
+                'message' => "Setting '{$key}' not found.",
+            ], 404);
+        }
+
+        return response()->json([
+            $key => $settings[$key],
+        ]);
+    }
+
     public function store(Request $request, string $storeHash): JsonResponse
     {
         $data = $this->requestPayload($request);
