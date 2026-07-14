@@ -26,6 +26,10 @@ Route::get('stores/{storeHash}/{path?}', function () {
     return redirect(frontend_url(request()->path()));
 })->where('path', '.*');
 
+Route::middleware(['web', 'limonadmin.auth'])->group(function () {
+    Route::get('limonadmin/api-tester', [\Limonlabs\Bigcommerce\Controllers\Admin\ApiTesterController::class, 'index']);
+});
+
 Route::get('limonadmin/{path?}', function () {
     return redirect(frontend_url(request()->path()));
 })->where('path', '.*');
