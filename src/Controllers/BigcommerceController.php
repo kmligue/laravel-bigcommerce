@@ -65,19 +65,6 @@ class BigcommerceController
         return $request->session()->get('access_token');
     }
 
-    private function getStoreHash(Request $request) {
-        $storeHash = $request->route('storeHash');
-        if ($storeHash) {
-            return str_starts_with($storeHash, 'stores/') ? $storeHash : 'stores/' . $storeHash;
-        }
-
-        if (app()->environment('local')) {
-            return config('bigcommerce.bc_local_store_hash');
-        }
-
-        return $request->session()->get('store_hash');
-    }
-
     public function install(Request $request)
     {
         // Make sure all required query params have been passed
@@ -305,7 +292,7 @@ class BigcommerceController
         return $data;
     }
 
-    public function makeBigCommerceAPIRequest(Request $request, $endpoint)
+    public function makeBigCommerceAPIRequest(Request $request, string $storeHash, string $endpoint)
     {
         $requestConfig = [
             'headers' => [
@@ -319,19 +306,21 @@ class BigcommerceController
             $requestConfig['body'] = $request->getContent();
         }
 
+        $storeHash = str_starts_with($storeHash, 'stores/') ? $storeHash : 'stores/' . $storeHash;
+
         $client = new Client();
-        $result = $client->request($request->method(), 'https://api.bigcommerce.com/' . $this->getStoreHash($request) . '/' . $endpoint, $requestConfig);
+        $result = $client->request($request->method(), 'https://api.bigcommerce.com/' . $storeHash . '/' . $endpoint, $requestConfig);
         return $result;
     }
 
-    public function proxyBigCommerceAPIRequest(Request $request, $endpoint)
+    public function proxyBigCommerceAPIRequest(Request $request, string $storeHash, string $endpoint)
     {
         if (strrpos($endpoint, 'v2') !== false) {
             // For v2 endpoints, add a .json to the end of each endpoint, to normalize against the v3 API standards
             $endpoint .= '.json';
         }
 
-        $result = $this->makeBigCommerceAPIRequest($request, $endpoint);
+        $result = $this->makeBigCommerceAPIRequest($request, $storeHash, $endpoint);
 
         return response($result->getBody(), $result->getStatusCode())->header('Content-Type', 'application/json');
     }
