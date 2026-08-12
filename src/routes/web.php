@@ -19,8 +19,10 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 
-Route::any('/bc-api/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'proxyBigCommerceAPIRequest'])
-    ->where('endpoint', 'v2\/.*|v3\/.*');
+Route::middleware(['web', 'bigcommerce.store.auth'])->group(function () {
+    Route::any('/bc-api/stores/{storeHash}/{endpoint}', [\Limonlabs\Bigcommerce\Controllers\BigcommerceController::class, 'proxyBigCommerceAPIRequest'])
+        ->where('endpoint', 'v2\/.*|v3\/.*');
+});
 
 Route::get('stores/{storeHash}/{path?}', function () {
     return redirect(frontend_url(request()->path()));

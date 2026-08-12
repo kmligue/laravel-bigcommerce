@@ -42,22 +42,40 @@ class BigcommerceController
     private function getAccessToken(Request $request) {
         if (app()->environment('local')) {
             return config('bigcommerce.bc_local_access_token');
-        } else {
-            $store_info = tenant_class()::where('user_id', $request->session()->get('user_id'))->first();
+        }
+
+        $tenant = $request->get('tenant');
+        if ($tenant) {
+            return $tenant->access_token;
+        }
+
+        $storeHash = $request->route('storeHash');
+        if ($storeHash) {
+            $store_info = tenant_class()::where('store_hash', 'stores/' . $storeHash)->first();
             if ($store_info) {
                 return $store_info->access_token;
             }
-
-            return $request->session()->get('access_token');
         }
+
+        $store_info = tenant_class()::where('user_id', $request->session()->get('user_id'))->first();
+        if ($store_info) {
+            return $store_info->access_token;
+        }
+
+        return $request->session()->get('access_token');
     }
 
     private function getStoreHash(Request $request) {
+        $storeHash = $request->route('storeHash');
+        if ($storeHash) {
+            return str_starts_with($storeHash, 'stores/') ? $storeHash : 'stores/' . $storeHash;
+        }
+
         if (app()->environment('local')) {
             return config('bigcommerce.bc_local_store_hash');
-        } else {
-            return $request->session()->get('store_hash');
         }
+
+        return $request->session()->get('store_hash');
     }
 
     public function install(Request $request)
