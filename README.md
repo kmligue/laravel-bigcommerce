@@ -216,9 +216,10 @@ Handled by `BigcommerceController@proxyBigCommerceAPIRequest`. The route uses `b
 **Examples**
 
 ```
-GET /bc-api/stores/{storeHash}/v3/catalog/products     → GET https://api.bigcommerce.com/stores/{storeHash}/v3/catalog/products
-GET /bc-api/stores/{storeHash}/v2/store                → GET https://api.bigcommerce.com/stores/{storeHash}/v2/store.json
-PUT /bc-api/stores/{storeHash}/v3/catalog/products/42  → PUT with the request body forwarded
+GET  /bc-api/stores/{storeHash}/v3/catalog/products     → GET https://api.bigcommerce.com/stores/{storeHash}/v3/catalog/products
+GET  /bc-api/stores/{storeHash}/v2/store                → GET https://api.bigcommerce.com/stores/{storeHash}/v2/store.json
+POST /bc-api/stores/{storeHash}/v3/content/scripts      → POST with the request body forwarded
+PUT  /bc-api/stores/{storeHash}/v3/catalog/products/42  → PUT with the request body forwarded
 ```
 
 **Authentication**
@@ -230,7 +231,8 @@ PUT /bc-api/stores/{storeHash}/v3/catalog/products/42  → PUT with the request 
 **Behavior and limitations**
 
 - v2 endpoints automatically get a `.json` suffix appended to normalize responses against the v3 API.
-- The request body is only forwarded for `PUT` requests; `POST` bodies are not passed through.
+- The request body is forwarded for `POST`, `PUT`, `PATCH`, and `DELETE` requests.
+- Upstream 4xx/5xx responses from BigCommerce are returned with the original status and JSON body instead of being converted into a 500.
 - The query string is **not** forwarded to BigCommerce — only the path is proxied, so filters like `?limit=10` have no effect.
 - Only paths starting with `v2/` or `v3/` are accepted; anything else 404s.
 

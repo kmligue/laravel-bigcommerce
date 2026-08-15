@@ -4,6 +4,7 @@ namespace Limonlabs\Bigcommerce\Controllers;
 
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Limonlabs\Bigcommerce\Models\StoreInfo;
 use Limonlabs\Bigcommerce\Models\Webhook;
 use Illuminate\Support\Facades\Auth;
@@ -164,7 +165,7 @@ class BigcommerceController
             $this->installScripts($store_info);
             $this->installWebhooks($store_info);
 
-            if (auth()->check()) {
+            if (Auth::check()) {
                 Auth::logout();
             }
 
@@ -175,7 +176,7 @@ class BigcommerceController
             }
 
             return redirect(resolve_load_redirect_url('/', $storeHash, [], $store_info));
-        } catch (\RequestException $e) {
+        } catch (RequestException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorMessage = "An error occurred.";
 
@@ -224,7 +225,7 @@ class BigcommerceController
             $user_id = $verifiedSignedRequestData['user']['id'];
             $storeHash = $verifiedSignedRequestData['context'];
 
-            if (auth()->check()) {
+            if (Auth::check()) {
                 Auth::logout();
             }
 
@@ -302,8 +303,11 @@ class BigcommerceController
             ]
         ];
 
-        if ($request->method() === 'PUT') {
-            $requestConfig['body'] = $request->getContent();
+        if (in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+            $body = $request->getContent();
+            if ($body !== '') {
+                $requestConfig['body'] = $body;
+            }
         }
 
         $storeHash = str_starts_with($storeHash, 'stores/') ? $storeHash : 'stores/' . $storeHash;
@@ -320,9 +324,19 @@ class BigcommerceController
             $endpoint .= '.json';
         }
 
-        $result = $this->makeBigCommerceAPIRequest($request, $storeHash, $endpoint);
+        try {
+            $result = $this->makeBigCommerceAPIRequest($request, $storeHash, $endpoint);
 
-        return response($result->getBody(), $result->getStatusCode())->header('Content-Type', 'application/json');
+            return response($result->getBody(), $result->getStatusCode())->header('Content-Type', 'application/json');
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+
+                return response($response->getBody(), $response->getStatusCode())->header('Content-Type', 'application/json');
+            }
+
+            throw $e;
+        }
     }
 
     public function uninstall(Request $request) {
